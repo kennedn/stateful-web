@@ -74,12 +74,6 @@
       color: white;
     }
 
-    .header p {
-      margin: 0;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
     /* Auth bar at top */
     .auth-bar {
       max-width: 900px;
@@ -438,6 +432,34 @@
     // Holds "Basic xxx" if username/password provided
     let authHeader = null;
 
+    // Navigation token to avoid race conditions
+    let currentNavToken = 0;
+
+    // Simple path -> items[] cache, persisted to localStorage
+    const CACHE_KEY = "stateful_api_cache_v1";
+    let pathCache = {};
+
+    function loadCache() {
+      try {
+        const raw = window.localStorage.getItem(CACHE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") {
+          pathCache = parsed;
+        }
+      } catch (_) {
+        pathCache = {};
+      }
+    }
+
+    function saveCache() {
+      try {
+        window.localStorage.setItem(CACHE_KEY, JSON.stringify(pathCache));
+      } catch (_) {
+        // ignore storage errors (private mode, quota, etc.)
+      }
+    }
+
     function setTerminalHeight(px) {
       const clamped = Math.min(Math.max(px, 120), window.innerHeight * 0.8);
       document.documentElement.style.setProperty("--terminal-height", clamped + "px");
@@ -584,6 +606,11 @@
     }
 
     async function fetchList(path) {
+      // Cache hit
+      if (pathCache[path]) {
+        return pathCache[path];
+      }
+
       const { ok, status, json, text } = await fetchRaw(path);
       if (!ok || status !== 200) {
         throw new Error(`${status} on ${path}: ${text || "(no body)"}`);
@@ -591,13 +618,27 @@
       if (!json || !Array.isArray(json.data)) {
         throw new Error(`Unexpected response at ${path}`);
       }
+
+      // Cache and persist
+      pathCache[path] = json.data;
+      saveCache();
+
       return json.data;
     }
 
     async function tryFetchList(path) {
+      // Cache hit
+      if (pathCache[path]) {
+        return pathCache[path];
+      }
+
       const { ok, status, json } = await fetchRaw(path);
       if (!ok || status !== 200) return null;
       if (!json || !Array.isArray(json.data)) return null;
+
+      pathCache[path] = json.data;
+      saveCache();
+
       return json.data;
     }
 
@@ -912,21 +953,33 @@
     }
 
     async function navigateTo(pathSegments, knownItems, push = true) {
+      const navToken = ++currentNavToken; // bump token for this navigation
       const itemsEl = document.getElementById("items");
       itemsEl.textContent = "Loading…";
 
       try {
-        const items = knownItems || await fetchList(pathToString(pathSegments));
+        const path = pathToString(pathSegments);
+        const items = knownItems || await fetchList(path);
+
+        // If a newer navigation started while we were fetching, abort
+        if (navToken !== currentNavToken) {
+          return;
+        }
+
         await renderPath(pathSegments, items);
 
-        if (push) {
+        if (push && navToken === currentNavToken) {
           history.pushState(
             { pathSegments },
             "",
-            "#" + pathToString(pathSegments)
+            "#" + path
           );
         }
       } catch (e) {
+        if (navToken !== currentNavToken) {
+          // stale; ignore
+          return;
+        }
         itemsEl.textContent = `Error loading ${pathToString(
           pathSegments
         )}: ${e.message}`;
@@ -943,6 +996,7 @@
         ) || 220
       );
       setupTerminalDrag();
+      loadCache();
 
       const authForm = document.getElementById("auth-form");
       const userInput = document.getElementById("auth-username");
