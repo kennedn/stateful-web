@@ -407,7 +407,7 @@
             placeholder="Optional"
           />
         </label>
-        <button type="submit">Apply</button>
+        <button type="submit" id="auth-login-btn">Login</button>
       </form>
     </div>
 
@@ -429,7 +429,8 @@
   </div>
 
   <script>
-    const BASE_URL= "https://api.kennedn.com/v2";
+    // Point this at your API
+    const BASE_URL = "https://api.kennedn.com/v2";
 
     let currentPathSegments = [];
     let dragState = null;
@@ -557,7 +558,6 @@
     async function fetchRaw(path, options = {}) {
       const url = BASE_URL + path;
 
-      // Merge/extend headers with Authorization if set
       const headers = new Headers(options.headers || {});
       if (authHeader) {
         headers.set("Authorization", authHeader);
@@ -944,7 +944,6 @@
       );
       setupTerminalDrag();
 
-      // Hook up auth form for username/password → Authorization header
       const authForm = document.getElementById("auth-form");
       const userInput = document.getElementById("auth-username");
       const passInput = document.getElementById("auth-password");
@@ -957,6 +956,22 @@
         authForm.addEventListener("submit", (e) => {
           e.preventDefault();
           updateAuthHeaderFromInputs();
+          // Reload current path with new Authorization header
+          navigateTo(currentPathSegments, null, false);
+        });
+
+        // Ensure pressing Enter in the password field behaves like clicking Login
+        passInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (authForm.requestSubmit) {
+              authForm.requestSubmit();
+            } else {
+              authForm.dispatchEvent(
+                new Event("submit", { cancelable: true, bubbles: true })
+              );
+            }
+          }
         });
 
         // Initialize from any prefilled values (password manager)
