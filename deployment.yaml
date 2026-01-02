@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stateful-web
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stateful-web
+  template:
+    metadata:
+      labels:
+        app: stateful-web
+    spec:
+      containers:
+        - name: stateful-web
+          image: quay.io/kennedn/stateful-web:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+
