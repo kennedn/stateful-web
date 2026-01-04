@@ -348,17 +348,20 @@ pre {
     display: grid;
     table-layout: auto;
     gap: 0.35rem;
+    overflow: auto;
 
     .table-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+      grid-template-columns: repeat(var(--table-columns, auto-fit), minmax(max-content, 1fr));
       gap: 0.25rem;
+      min-width: max-content;
       padding: 0.35rem 0.5rem;
       background: rgba(0, 0, 0, 0.15);
       font-size: 0.95rem;
 
       span {
         padding: 0.2rem 0.35rem;
+        white-space: nowrap;
         background: rgba(255, 255, 255, 0.04);
         border: 1px solid rgba(255, 255, 255, 0.08);
 

@@ -100,6 +100,7 @@ const {
   responseText,
   authUsername,
   authPassword,
+  authHeader,
   rangeInfo,
   rangeCode,
   rangeWithValue,
@@ -121,7 +122,7 @@ const {
   bthomeStatus,
   thermostatStatus,
   refresh,
-} = useThermostatStatus();
+} = useThermostatStatus(authHeader);
 
 const refreshThermostat = () => refresh();
 

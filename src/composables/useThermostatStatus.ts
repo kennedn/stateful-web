@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, type Ref } from 'vue';
 
 type RadiatorRow = {
   name: string;
@@ -32,7 +32,7 @@ type ThermostatRow = {
 
 const BASE_URL = 'https://api.kennedn.com/v2';
 
-export function useThermostatStatus() {
+export function useThermostatStatus(authHeader?: Ref<string | null>) {
   const loading = ref(false);
   const errorMessage = ref('');
   const radiatorStatus = ref<RadiatorRow[]>([]);
@@ -41,7 +41,13 @@ export function useThermostatStatus() {
 
   async function fetchJson(path: string) {
     const url = `${BASE_URL}${path}`;
-    const res = await fetch(url, { method: 'POST' });
+    const headers = new Headers();
+
+    if (authHeader?.value) {
+      headers.set('Authorization', authHeader.value);
+    }
+
+    const res = await fetch(url, { method: 'POST', headers });
     let json: any = null;
 
     try {
