@@ -12,122 +12,87 @@
     <div v-if="errorMessage" class="callout error">{{ errorMessage }}</div>
     <div v-else-if="loading" class="callout">Loading thermostat data…</div>
 
-    <div v-if="!loading && !errorMessage" class="thermostat-grid">
-      <section class="panel">
-        <header>
-          <h3>Radiators</h3>
-          <small>Kitchen, Living room, Office, Bedroom</small>
-        </header>
-        <p class="helper-text">
-          Each radiator card shows live target and room temperatures alongside the paired
-          BTHome sensor.
-        </p>
+    <div v-else class="thermostat-grid" aria-label="Heating devices">
+      <p class="helper-text">
+        Radiators and the boiler share a single grid so you can scan temperatures, targets and
+        heating states side by side.
+      </p>
 
-        <div v-if="radiatorCards.length" class="device-grid" aria-label="Radiator status">
-          <article
-            v-for="card in radiatorCards"
-            :key="card.id + card.name"
-            class="device-card radiator-card"
-            :class="{ 'is-heating': card.heating }"
-          >
-            <div class="device-illustration radiator-graphic" aria-hidden="true">
-              <span class="radiator-bar"></span>
-              <span class="radiator-bar"></span>
-              <span class="radiator-bar"></span>
-              <span class="radiator-bar"></span>
-              <span class="radiator-base"></span>
-            </div>
-
-            <div class="device-body">
-              <div class="device-heading">
-                <div>
-                  <p class="eyebrow">Radiator</p>
-                  <h4>{{ card.name }}</h4>
-                </div>
-                <small class="device-id">ID: {{ card.id || '—' }}</small>
-              </div>
-
-              <div class="stat-grid">
-                <div class="stat">
-                  <p class="label">Room temp</p>
-                  <p class="value">{{ formatTemperature(card.current) }}</p>
-                </div>
-                <div class="stat">
-                  <p class="label">Target</p>
-                  <p class="value">{{ formatTemperature(card.target) }}</p>
-                </div>
-                <div class="stat">
-                  <p class="label">BTHome</p>
-                  <p class="value">{{ formatTemperature(card.sensorTemperature) }}</p>
-                </div>
-                <div class="stat">
-                  <p class="label">Heating</p>
-                  <p class="value">
-                    <span class="heating-pill" :class="heatingClass(card.heating)">
-                      <span class="pulse" aria-hidden="true"></span>
-                      {{ formatHeating(card.heating) }}
-                    </span>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </article>
-        </div>
-        <div v-else class="table-empty">No radiator data.</div>
-      </section>
-
-      <section class="panel">
-        <header>
-          <h3>Thermostat</h3>
-          <small>Boiler and call for heat</small>
-        </header>
-        <p class="helper-text">
-          The main thermostat aggregates boiler demand and current set point.
-        </p>
-
+      <div v-if="deviceCards.length" class="device-grid">
         <article
-          v-if="thermostatStatus"
-          class="device-card thermostat-card"
-          :class="{ 'is-heating': thermostatStatus.heating }"
-          aria-label="Thermostat status"
+          v-for="card in deviceCards"
+          :key="card.kind === 'radiator' ? `${card.id}-${card.name}` : `thermostat-${card.name}`"
+          class="device-card"
+          :class="[{ 'is-heating': card.heating }, card.kind]"
         >
-          <div class="device-illustration boiler-graphic" aria-hidden="true">
-            <span class="boiler-body"></span>
-            <span class="boiler-gauge"></span>
+          <div class="device-icon" :class="card.kind" aria-hidden="true">
+            <svg
+              v-if="isRadiator(card)"
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              role="img"
+              aria-label="Radiator icon"
+            >
+              <path
+                d="M7.95 3 6.53 5.19 7.95 7.4h-.01L5.95 10.5 4.22 9.6 5.64 7.39 4.22 5.19 6.22 2.09 7.95 3Zm6-.11-1.42 2.21 1.42 2.2h-.01L11.95 10.4 10.22 9.5 11.64 7.3l-1.42-2.2 2-3.1 1.73.89ZM20 2.89l-1.44 2.21L20 7.3V7.31L18 10.4l-1.75-.9 1.42-2.2-1.42-2.2 2-3.1 1.75.89ZM2 22v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8h-2v-2H4v2H2Zm4-8a1 1 0 0 0-1 1v2a1 1 0 0 0 2 0v-2a1 1 0 0 0-1-1Zm4 0a1 1 0 0 0-1 1v2a1 1 0 0 0 2 0v-2a1 1 0 0 0-1-1Zm4 0a1 1 0 0 0-1 1v2a1 1 0 0 0 2 0v-2a1 1 0 0 0-1-1Zm4 0a1 1 0 0 0-1 1v2a1 1 0 0 0 2 0v-2a1 1 0 0 0-1-1Z"
+                fill="currentColor"
+              />
+            </svg>
+            <svg
+              v-else
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              role="img"
+              aria-label="Boiler icon"
+            >
+              <path
+                d="M8 2C6.89 2 6 2.89 6 4v12c0 1.11.89 2 2 2h1v2H6v2h3c1.11 0 2-.89 2-2v-2h2v2c0 1.11.89 2 2 2h3v-2h-3v-2h1c1.11 0 2-.89 2-2V4c0-1.11-.89-2-2-2Zm4 2.97a2 2 0 0 1 2 2 2 2 0 0 1-2 2 2 2 0 0 1-2-2 2 2 0 0 1 2-2M10 14.5h4V16h-4Z"
+                fill="currentColor"
+              />
+            </svg>
           </div>
 
           <div class="device-body">
             <div class="device-heading">
               <div>
-                <p class="eyebrow">Thermostat</p>
-                <h4>{{ thermostatStatus.name }}</h4>
+                <p class="eyebrow">{{ isRadiator(card) ? 'Radiator' : 'Thermostat' }}</p>
+                <h4>{{ card.name }}</h4>
               </div>
-              <small class="device-id">Mode: {{ formatNumber(thermostatStatus.mode) }}</small>
+              <small class="device-meta">
+                {{ isRadiator(card) ? `ID: ${card.id || '—'}` : `Mode: ${formatNumber(card.mode)}` }}
+              </small>
             </div>
 
             <div class="stat-grid">
               <div class="stat">
-                <p class="label">Temperature</p>
-                <p class="value">{{ formatTemperature(thermostatStatus.current) }}</p>
+                <p class="label">{{ isRadiator(card) ? 'Room temp' : 'Temperature' }}</p>
+                <p class="value">{{ formatTemperature(card.current) }}</p>
               </div>
               <div class="stat">
                 <p class="label">Target</p>
-                <p class="value">{{ formatTemperature(thermostatStatus.target) }}</p>
+                <p class="value">{{ formatTemperature(card.target) }}</p>
+              </div>
+              <div v-if="isRadiator(card)" class="stat">
+                <p class="label">BTHome</p>
+                <p class="value">{{ formatTemperature(card.sensorTemperature) }}</p>
               </div>
               <div class="stat">
                 <p class="label">Heating</p>
                 <p class="value">
-                  <span class="heating-pill" :class="heatingClass(thermostatStatus.heating)">
+                  <span class="heating-pill" :class="heatingClass(card.heating)">
                     <span class="pulse" aria-hidden="true"></span>
-                    {{ formatHeating(thermostatStatus.heating) }}
+                    {{ formatHeating(card.heating) }}
                   </span>
                 </p>
               </div>
             </div>
           </div>
         </article>
-        <div v-else class="table-empty">No thermostat data.</div>
-      </section>
+      </div>
+
+      <div v-else class="table-empty">No thermostat data.</div>
     </div>
   </div>
 </template>
@@ -141,6 +106,7 @@ import type {
 } from '../composables/useThermostatStatus';
 
 type RadiatorCard = RadiatorRow & { sensorTemperature: number | null };
+type DeviceCard = (RadiatorCard & { kind: 'radiator' }) | (ThermostatRow & { kind: 'thermostat' });
 
 const props = defineProps<{
   loading: boolean;
@@ -169,6 +135,19 @@ const radiatorCards = computed<RadiatorCard[]>(() =>
   })),
 );
 
+const deviceCards = computed<DeviceCard[]>(() => {
+  const devices: DeviceCard[] = radiatorCards.value.map((radiator) => ({
+    ...radiator,
+    kind: 'radiator',
+  }));
+
+  if (thermostatStatus.value) {
+    devices.push({ ...thermostatStatus.value, kind: 'thermostat' });
+  }
+
+  return devices;
+});
+
 function formatNumber(value: number | null) {
   if (value === null || value === undefined) return '—';
   return value;
@@ -176,7 +155,8 @@ function formatNumber(value: number | null) {
 
 function formatTemperature(value: number | null) {
   if (value === null || value === undefined) return '—';
-  return `${Number(value).toFixed(1)}°C`;
+  const celsius = Number(value) / 10;
+  return `${celsius.toFixed(1)}°C`;
 }
 
 function formatHeating(value: boolean | null) {
@@ -187,5 +167,9 @@ function formatHeating(value: boolean | null) {
 function heatingClass(value: boolean | null) {
   if (value === null || value === undefined) return 'unknown';
   return value ? 'on' : 'off';
+}
+
+function isRadiator(card: DeviceCard): card is RadiatorCard & { kind: 'radiator' } {
+  return card.kind === 'radiator';
 }
 </script>

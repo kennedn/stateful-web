@@ -290,14 +290,22 @@ pre {
   .thermostat-grid {
     display: flex;
     flex-direction: column;
-    gap: 0.9rem;
+    gap: 0.85rem;
   }
 
-  .panel {
-    position: relative;
+  .device-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 0.85rem;
+  }
+
+  .device-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.9rem;
+    align-items: center;
+    padding: 0.95rem 1rem;
     background: var(--card-bg);
-    padding: 0.95rem;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
     background-image:
       linear-gradient(to right, white 2px, transparent 2px),
       linear-gradient(to right, white 2px, transparent 2px),
@@ -318,48 +326,19 @@ pre {
       100% 100%;
     background-repeat: no-repeat;
     background-size: 16px 16px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    border-left: 6px solid rgba(255, 255, 255, 0.22);
+    transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
 
-    &:nth-of-type(3n + 1) {
+    &:nth-child(3n + 1) {
       background-color: #125250;
     }
-    &:nth-of-type(3n + 2) {
+    &:nth-child(3n + 2) {
       background-color: #941743;
     }
-    &:nth-of-type(3n) {
+    &:nth-child(3n) {
       background-color: #4e0277;
     }
-
-    header {
-      margin-bottom: 0.5rem;
-
-      h3 {
-        margin: 0;
-      }
-
-      small {
-        color: var(--text-muted);
-      }
-    }
-  }
-
-  .device-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 0.75rem;
-    margin-top: 0.5rem;
-  }
-
-  .device-card {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.9rem;
-    align-items: center;
-    padding: 0.85rem 0.95rem;
-    background: rgba(0, 0, 0, 0.18);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-left: 5px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
-    transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
 
     &:hover {
       transform: translateY(-2px);
@@ -372,63 +351,30 @@ pre {
     }
   }
 
-  .radiator-card {
+  .device-card.radiator {
     border-left-color: #ff7b9c;
   }
 
-  .thermostat-card {
+  .device-card.thermostat {
     border-left-color: #71d8ff;
   }
 
-  .device-illustration {
-    position: relative;
-    width: 78px;
-    min-height: 82px;
+  .device-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
     display: grid;
     place-items: center;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-  }
+    color: white;
+    background: rgba(0, 0, 0, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 
-  .radiator-graphic {
-    .radiator-bar {
-      display: block;
-      width: 46px;
-      height: 6px;
-      margin: 4px 0;
-      background: linear-gradient(90deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.25));
-      border-radius: 6px;
+    &.radiator {
+      background: linear-gradient(135deg, rgba(255, 177, 177, 0.35), rgba(255, 255, 255, 0.08));
     }
 
-    .radiator-base {
-      display: block;
-      width: 52px;
-      height: 10px;
-      margin-top: 4px;
-      background: rgba(255, 255, 255, 0.35);
-      border-radius: 999px;
-    }
-  }
-
-  .boiler-graphic {
-    .boiler-body {
-      width: 50px;
-      height: 60px;
-      border-radius: 12px;
-      border: 2px solid rgba(255, 255, 255, 0.4);
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.05));
-      display: block;
-    }
-
-    .boiler-gauge {
-      position: absolute;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      border: 2px solid rgba(255, 255, 255, 0.6);
-      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.7), transparent 60%);
-      box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.35);
+    &.thermostat {
+      background: linear-gradient(135deg, rgba(150, 225, 255, 0.35), rgba(255, 255, 255, 0.08));
     }
   }
 
@@ -449,7 +395,8 @@ pre {
       letter-spacing: 0.01em;
     }
 
-    .device-id {
+    .device-id,
+    .device-meta {
       color: var(--text-muted);
       white-space: nowrap;
     }
