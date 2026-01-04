@@ -13,11 +13,6 @@
     <div v-else-if="loading" class="callout">Loading thermostat data…</div>
 
     <div v-else class="thermostat-grid" aria-label="Heating devices">
-      <p class="helper-text">
-        Radiators and the boiler share a single grid so you can scan temperatures, targets and
-        heating states side by side.
-      </p>
-
       <div v-if="deviceCards.length" class="device-grid">
         <article
           v-for="card in deviceCards"
@@ -28,8 +23,8 @@
           <div class="device-icon" :class="card.kind" aria-hidden="true">
             <svg
               v-if="isRadiator(card)"
-              width="32"
-              height="32"
+              width="64"
+              height="64"
               viewBox="0 0 24 24"
               role="img"
               aria-label="Radiator icon"
@@ -41,8 +36,8 @@
             </svg>
             <svg
               v-else
-              width="32"
-              height="32"
+              width="64"
+              height="64"
               viewBox="0 0 24 24"
               role="img"
               aria-label="Boiler icon"
@@ -76,7 +71,7 @@
               </div>
               <div v-if="isRadiator(card)" class="stat">
                 <p class="label">BTHome</p>
-                <p class="value">{{ formatTemperature(card.sensorTemperature) }}</p>
+                <p class="value">{{ formatBtHomeTemperature(card.sensorTemperature) }}</p>
               </div>
               <div class="stat">
                 <p class="label">Heating</p>
@@ -142,7 +137,7 @@ const deviceCards = computed<DeviceCard[]>(() => {
   }));
 
   if (thermostatStatus.value) {
-    devices.push({ ...thermostatStatus.value, kind: 'thermostat' });
+    devices.unshift({ ...thermostatStatus.value, kind: 'thermostat' });
   }
 
   return devices;
@@ -156,7 +151,13 @@ function formatNumber(value: number | null) {
 function formatTemperature(value: number | null) {
   if (value === null || value === undefined) return '—';
   const celsius = Number(value) / 10;
-  return `${celsius.toFixed(1)}°C`;
+  return `${celsius.toFixed(2)}°C`;
+}
+
+function formatBtHomeTemperature(value: number | null) {
+  if (value === null || value === undefined) return '—';
+  const celsius = Number(value);
+  return `${celsius.toFixed(2)}°C`;
 }
 
 function formatHeating(value: boolean | null) {
