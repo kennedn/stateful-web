@@ -16,89 +16,131 @@
       <section class="panel">
         <header>
           <h3>Radiators</h3>
-          <small>kitchen, living room, office, bedroom</small>
+          <small>Kitchen, Living room, Office, Bedroom</small>
         </header>
-        <div class="table" role="table" aria-label="Radiator status">
-          <div class="table-row table-head" role="row">
-            <span v-for="col in radiatorColumns" :key="col" role="columnheader">{{ col }}</span>
-          </div>
-          <div
-            v-for="row in radiatorStatus"
-            :key="row.id + row.name"
-            class="table-row"
-            role="row"
-          >
-            <span role="cell">{{ row.name }}</span>
-            <span role="cell">{{ row.id }}</span>
-            <span role="cell">{{ formatNumber(row.onoff) }}</span>
-            <span role="cell">{{ formatNumber(row.mode) }}</span>
-            <span role="cell">{{ formatNumber(row.current) }}</span>
-            <span role="cell">{{ formatNumber(row.target) }}</span>
-            <span role="cell">{{ formatBoolean(row.heating) }}</span>
-            <span role="cell">{{ formatBoolean(row.openWindow) }}</span>
-          </div>
-          <div v-if="!radiatorStatus.length" class="table-empty">No radiator data.</div>
-        </div>
-      </section>
+        <p class="helper-text">
+          Each radiator card shows live target and room temperatures alongside the paired
+          BTHome sensor.
+        </p>
 
-      <section class="panel">
-        <header>
-          <h3>Room sensors</h3>
-          <small>bthome status</small>
-        </header>
-        <div class="table" role="table" aria-label="Room sensor status">
-          <div class="table-row table-head" role="row">
-            <span v-for="col in sensorColumns" :key="col" role="columnheader">{{ col }}</span>
-          </div>
-          <div
-            v-for="row in bthomeStatus"
-            :key="row.name + row.packet"
-            class="table-row"
-            role="row"
+        <div v-if="radiatorCards.length" class="device-grid" aria-label="Radiator status">
+          <article
+            v-for="card in radiatorCards"
+            :key="card.id + card.name"
+            class="device-card radiator-card"
+            :class="{ 'is-heating': card.heating }"
           >
-            <span role="cell">{{ row.name }}</span>
-            <span role="cell">{{ formatNumber(row.packet) }}</span>
-            <span role="cell">{{ formatNumber(row.battery) }}</span>
-            <span role="cell">{{ formatDecimal(row.temperature) }}</span>
-            <span role="cell">{{ formatDecimal(row.humidity) }}</span>
-            <span role="cell">{{ formatDecimal(row.voltage) }}</span>
-          </div>
-          <div v-if="!bthomeStatus.length" class="table-empty">No sensor data.</div>
+            <div class="device-illustration radiator-graphic" aria-hidden="true">
+              <span class="radiator-bar"></span>
+              <span class="radiator-bar"></span>
+              <span class="radiator-bar"></span>
+              <span class="radiator-bar"></span>
+              <span class="radiator-base"></span>
+            </div>
+
+            <div class="device-body">
+              <div class="device-heading">
+                <div>
+                  <p class="eyebrow">Radiator</p>
+                  <h4>{{ card.name }}</h4>
+                </div>
+                <small class="device-id">ID: {{ card.id || '—' }}</small>
+              </div>
+
+              <div class="stat-grid">
+                <div class="stat">
+                  <p class="label">Room temp</p>
+                  <p class="value">{{ formatTemperature(card.current) }}</p>
+                </div>
+                <div class="stat">
+                  <p class="label">Target</p>
+                  <p class="value">{{ formatTemperature(card.target) }}</p>
+                </div>
+                <div class="stat">
+                  <p class="label">BTHome</p>
+                  <p class="value">{{ formatTemperature(card.sensorTemperature) }}</p>
+                </div>
+                <div class="stat">
+                  <p class="label">Heating</p>
+                  <p class="value">
+                    <span class="heating-pill" :class="heatingClass(card.heating)">
+                      <span class="pulse" aria-hidden="true"></span>
+                      {{ formatHeating(card.heating) }}
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </article>
         </div>
+        <div v-else class="table-empty">No radiator data.</div>
       </section>
 
       <section class="panel">
         <header>
           <h3>Thermostat</h3>
-          <small>thermostat status</small>
+          <small>Boiler and call for heat</small>
         </header>
-        <div class="table" role="table" aria-label="Thermostat status">
-          <div class="table-row table-head" role="row">
-            <span v-for="col in thermostatColumns" :key="col" role="columnheader">{{ col }}</span>
+        <p class="helper-text">
+          The main thermostat aggregates boiler demand and current set point.
+        </p>
+
+        <article
+          v-if="thermostatStatus"
+          class="device-card thermostat-card"
+          :class="{ 'is-heating': thermostatStatus.heating }"
+          aria-label="Thermostat status"
+        >
+          <div class="device-illustration boiler-graphic" aria-hidden="true">
+            <span class="boiler-body"></span>
+            <span class="boiler-gauge"></span>
           </div>
-          <div v-if="thermostatStatus" class="table-row" role="row">
-            <span role="cell">{{ thermostatStatus.name }}</span>
-            <span role="cell">{{ formatNumber(thermostatStatus.onoff) }}</span>
-            <span role="cell">{{ formatNumber(thermostatStatus.mode) }}</span>
-            <span role="cell">{{ formatNumber(thermostatStatus.current) }}</span>
-            <span role="cell">{{ formatNumber(thermostatStatus.target) }}</span>
-            <span role="cell">{{ formatBoolean(thermostatStatus.heating) }}</span>
-            <span role="cell">{{ formatBoolean(thermostatStatus.openWindow) }}</span>
+
+          <div class="device-body">
+            <div class="device-heading">
+              <div>
+                <p class="eyebrow">Thermostat</p>
+                <h4>{{ thermostatStatus.name }}</h4>
+              </div>
+              <small class="device-id">Mode: {{ formatNumber(thermostatStatus.mode) }}</small>
+            </div>
+
+            <div class="stat-grid">
+              <div class="stat">
+                <p class="label">Temperature</p>
+                <p class="value">{{ formatTemperature(thermostatStatus.current) }}</p>
+              </div>
+              <div class="stat">
+                <p class="label">Target</p>
+                <p class="value">{{ formatTemperature(thermostatStatus.target) }}</p>
+              </div>
+              <div class="stat">
+                <p class="label">Heating</p>
+                <p class="value">
+                  <span class="heating-pill" :class="heatingClass(thermostatStatus.heating)">
+                    <span class="pulse" aria-hidden="true"></span>
+                    {{ formatHeating(thermostatStatus.heating) }}
+                  </span>
+                </p>
+              </div>
+            </div>
           </div>
-          <div v-else class="table-empty">No thermostat data.</div>
-        </div>
+        </article>
+        <div v-else class="table-empty">No thermostat data.</div>
       </section>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { toRefs } from 'vue';
+import { computed, toRefs } from 'vue';
 import type {
   BthomeRow,
   RadiatorRow,
   ThermostatRow,
 } from '../composables/useThermostatStatus';
+
+type RadiatorCard = RadiatorRow & { sensorTemperature: number | null };
 
 const props = defineProps<{
   loading: boolean;
@@ -112,48 +154,38 @@ const emit = defineEmits<{ (e: 'refresh'): void }>();
 
 const { loading, errorMessage, radiatorStatus, bthomeStatus, thermostatStatus } = toRefs(props);
 
-const radiatorColumns = [
-  'NAME',
-  'ID',
-  'ONOFF',
-  'MODE',
-  'CURRENT',
-  'TARGET',
-  'HEATING',
-  'OPEN_WINDOW',
-];
+const bthomeByName = computed(() => {
+  const mapping = new Map<string, number | null>();
+  bthomeStatus.value.forEach((row) => {
+    mapping.set(row.name, row.temperature ?? null);
+  });
+  return mapping;
+});
 
-const sensorColumns = [
-  'NAME',
-  'PACKET',
-  'BATTERY',
-  'TEMPERATURE',
-  'HUMIDITY',
-  'VOLTAGE',
-];
-
-const thermostatColumns = [
-  'NAME',
-  'ONOFF',
-  'MODE',
-  'CURRENT',
-  'TARGET',
-  'HEATING',
-  'OPEN_WINDOW',
-];
-
-function formatBoolean(value: boolean | null) {
-  if (value === null || value === undefined) return '—';
-  return value ? 'TRUE' : 'FALSE';
-}
+const radiatorCards = computed<RadiatorCard[]>(() =>
+  radiatorStatus.value.map((radiator) => ({
+    ...radiator,
+    sensorTemperature: bthomeByName.value.get(radiator.name) ?? null,
+  })),
+);
 
 function formatNumber(value: number | null) {
   if (value === null || value === undefined) return '—';
   return value;
 }
 
-function formatDecimal(value: number | null) {
+function formatTemperature(value: number | null) {
   if (value === null || value === undefined) return '—';
-  return Number(value).toFixed(2);
+  return `${Number(value).toFixed(1)}°C`;
+}
+
+function formatHeating(value: boolean | null) {
+  if (value === null || value === undefined) return 'Unknown';
+  return value ? 'Heating' : 'Idle';
+}
+
+function heatingClass(value: boolean | null) {
+  if (value === null || value === undefined) return 'unknown';
+  return value ? 'on' : 'off';
 }
 </script>
