@@ -1,66 +1,68 @@
 <template>
   <div>
     <div class="app">
-      <div class="header">
-        <div class="mode-toggle" role="tablist" aria-label="Mode selector">
-          <button
-            type="button"
-            role="tab"
-            :aria-selected="mode === 'stateful'"
-            :class="['mode-btn', { active: mode === 'stateful' }]"
-            @click="mode = 'stateful'"
-          >
-            stateful
-          </button>
-          <button
-            type="button"
-            role="tab"
-            :aria-selected="mode === 'thermostat'"
-            :class="['mode-btn', { active: mode === 'thermostat' }]"
-            @click="mode = 'thermostat'"
-          >
-            thermostat
-          </button>
+      <div class="content-shell">
+        <div class="header">
+          <div class="mode-toggle" role="tablist" aria-label="Mode selector">
+            <button
+              type="button"
+              role="tab"
+              :aria-selected="mode === 'stateful'"
+              :class="['mode-btn', { active: mode === 'stateful' }]"
+              @click="mode = 'stateful'"
+            >
+              stateful
+            </button>
+            <button
+              type="button"
+              role="tab"
+              :aria-selected="mode === 'thermostat'"
+              :class="['mode-btn', { active: mode === 'thermostat' }]"
+              @click="mode = 'thermostat'"
+            >
+              thermostat
+            </button>
+          </div>
         </div>
+
+        <main class="main">
+          <template v-if="mode === 'stateful'">
+            <PathBreadcrumb
+              class="path"
+              :segments="currentPathSegments"
+              @navigateRoot="navigateTo([], null, true)"
+              @navigateTo="(segPath) => navigateTo(segPath, null, true)"
+            />
+            <ItemsView
+              :items="items"
+              :loading="loading"
+              :error-message="errorMessage"
+              :range-info="rangeInfo"
+              :range-code="rangeCode"
+              :range-with-value="rangeWithValue"
+              :range-value="rangeValue"
+              :child-info="childInfo"
+              :current-path="currentPathSegments"
+              @update:rangeCode="rangeCode = $event"
+              @update:rangeWithValue="rangeWithValue = $event"
+              @update:rangeValue="rangeValue = $event"
+              @post="postCode"
+              @navigate="navigateTo"
+              @setRowBackground="setRowBackgroundFromEvent"
+            />
+          </template>
+
+          <ThermostatView
+            v-else
+            :loading="thermostatLoading"
+            :error-message="thermostatError"
+            :radiator-status="radiatorStatus"
+            :bthome-status="bthomeStatus"
+            :thermostat-status="thermostatStatus"
+            @refresh="refreshThermostat"
+          />
+        </main>
       </div>
-
-      <main class="main">
-        <template v-if="mode === 'stateful'">
-          <PathBreadcrumb
-            class="path"
-            :segments="currentPathSegments"
-            @navigateRoot="navigateTo([], null, true)"
-            @navigateTo="(segPath) => navigateTo(segPath, null, true)"
-          />
-          <ItemsView
-            :items="items"
-            :loading="loading"
-            :error-message="errorMessage"
-            :range-info="rangeInfo"
-            :range-code="rangeCode"
-            :range-with-value="rangeWithValue"
-            :range-value="rangeValue"
-            :child-info="childInfo"
-            :current-path="currentPathSegments"
-            @update:rangeCode="rangeCode = $event"
-            @update:rangeWithValue="rangeWithValue = $event"
-            @update:rangeValue="rangeValue = $event"
-            @post="postCode"
-            @navigate="navigateTo"
-            @setRowBackground="setRowBackgroundFromEvent"
-          />
-        </template>
-
-        <ThermostatView
-          v-else
-          :loading="thermostatLoading"
-          :error-message="thermostatError"
-          :radiator-status="radiatorStatus"
-          :bthome-status="bthomeStatus"
-          :thermostat-status="thermostatStatus"
-          @refresh="refreshThermostat"
-        />
-      </main>
     </div>
 
     <ExplorerPanel
