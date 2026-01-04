@@ -65,6 +65,7 @@
     </div>
 
     <ExplorerPanel
+      v-if="mode === 'stateful'"
       :status="statusLabel"
       :response="responseText"
       :showAuth="showAuthPanel"
