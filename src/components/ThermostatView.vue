@@ -2,18 +2,12 @@
   <div class="thermostat-view">
     <div class="thermostat-heading">
       <div>
-        <p class="eyebrow">Thermostat mode</p>
-        <h2>Home status overview</h2>
+        <h2>Home heating overview</h2>
       </div>
       <button class="refresh" type="button" :disabled="loading" @click="emit('refresh')">
         {{ loading ? 'Loading…' : 'Refresh' }}
       </button>
     </div>
-
-    <p class="helper-text">
-      Live thermostat data pulled from the <code>radiator</code>, <code>bthome</code>, and
-      <code>thermostat</code> endpoints.
-    </p>
 
     <div v-if="errorMessage" class="callout error">{{ errorMessage }}</div>
     <div v-else-if="loading" class="callout">Loading thermostat data…</div>

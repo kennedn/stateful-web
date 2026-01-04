@@ -74,21 +74,40 @@ pre {
 }
 
 .header {
-  max-width: 900px;
+  max-width: 250px;
   margin: 0 auto 0.75rem;
+  background-image:
+    linear-gradient(to right, white 2px, transparent 2px),
+    linear-gradient(to right, white 2px, transparent 2px),
+    linear-gradient(to left, white 2px, transparent 2px),
+    linear-gradient(to left, white 2px, transparent 2px),
+    linear-gradient(to bottom, white 2px, transparent 2px),
+    linear-gradient(to bottom, white 2px, transparent 2px),
+    linear-gradient(to top, white 2px, transparent 2px),
+    linear-gradient(to top, white 2px, transparent 2px);
+  background-position:
+    0 0,
+    0 100%,
+    100% 0,
+    100% 100%,
+    0 0,
+    100% 0,
+    0 100%,
+    100% 100%;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 
   .mode-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.3rem 0.4rem;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: stretch;
     color: var(--text-muted);
     font-weight: 700;
     letter-spacing: 0.03em;
+    padding: .65rem .65rem;
 
     .divider {
+      display: none; // optional: no divider needed when buttons are 50/50
       opacity: 0.7;
       margin: 0 0.15rem;
     }
@@ -100,13 +119,16 @@ pre {
       font: inherit;
       cursor: pointer;
       padding: 0.35rem 0.85rem;
-      border-radius: 999px;
+      border-radius: 0; // removed radius
       transition: background 0.2s, color 0.2s;
+      flex: 1 0 50%; // always half of parent when there are two
+      height: 100%;  // fill parent height
+      padding: .65rem;
 
       &.active {
         background: white;
         color: #0f433f;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+
       }
 
       &:focus-visible {
@@ -116,6 +138,7 @@ pre {
     }
   }
 }
+
 
 .main {
   max-width: 900px;
@@ -227,48 +250,15 @@ pre {
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.85rem 1rem;
-    border-radius: 14px;
-    background-color: #941743;
-    background-image:
-      linear-gradient(to right, white 2px, transparent 2px),
-      linear-gradient(to right, white 2px, transparent 2px),
-      linear-gradient(to left, white 2px, transparent 2px),
-      linear-gradient(to left, white 2px, transparent 2px),
-      linear-gradient(to bottom, white 2px, transparent 2px),
-      linear-gradient(to bottom, white 2px, transparent 2px),
-      linear-gradient(to top, white 2px, transparent 2px),
-      linear-gradient(to top, white 2px, transparent 2px);
-    background-position:
-      0 0,
-      0 100%,
-      100% 0,
-      100% 100%,
-      0 0,
-      100% 0,
-      0 100%,
-      100% 100%;
-    background-repeat: no-repeat;
-    background-size: 16px 16px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
 
     h2 {
       margin: 0;
-    }
-
-    .eyebrow {
-      margin: 0;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      font-size: 0.8rem;
     }
 
     .refresh {
       background: white;
       color: #0f433f;
       border: none;
-      border-radius: 999px;
       padding: 0.55rem 1rem;
       font-weight: 700;
       cursor: pointer;
@@ -288,7 +278,6 @@ pre {
 
   .callout {
     padding: 0.8rem 1rem;
-    border-radius: 12px;
     background: rgba(255, 255, 255, 0.08);
     color: white;
 
@@ -307,7 +296,6 @@ pre {
   .panel {
     position: relative;
     background: var(--card-bg);
-    border-radius: 14px;
     padding: 0.95rem;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
     background-image:
@@ -358,6 +346,7 @@ pre {
     width: 100%;
     border-collapse: collapse;
     display: grid;
+    table-layout: auto;
     gap: 0.35rem;
 
     .table-row {
@@ -365,13 +354,11 @@ pre {
       grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
       gap: 0.25rem;
       padding: 0.35rem 0.5rem;
-      border-radius: 10px;
       background: rgba(0, 0, 0, 0.15);
       font-size: 0.95rem;
 
       span {
         padding: 0.2rem 0.35rem;
-        border-radius: 6px;
         background: rgba(255, 255, 255, 0.04);
         border: 1px solid rgba(255, 255, 255, 0.08);
 
