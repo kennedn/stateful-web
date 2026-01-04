@@ -73,6 +73,10 @@
                 <p class="label">BTHome</p>
                 <p class="value">{{ formatBtHomeTemperature(card.sensorTemperature) }}</p>
               </div>
+              <div v-else class="stat">
+                <p class="label">BTHome</p>
+                <p class="value">{{ formatBtHomeTemperature(card.sensorTemperature) }}</p>
+              </div>
               <div class="stat">
                 <p class="label">Heating</p>
                 <p class="value">
