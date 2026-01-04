@@ -18,7 +18,12 @@
           <h3>Radiators</h3>
           <small>kitchen, living room, office, bedroom</small>
         </header>
-        <div class="table" role="table" aria-label="Radiator status">
+        <div
+          class="table"
+          role="table"
+          aria-label="Radiator status"
+          :style="{ '--table-columns': radiatorColumns.length }"
+        >
           <div class="table-row table-head" role="row">
             <span v-for="col in radiatorColumns" :key="col" role="columnheader">{{ col }}</span>
           </div>
@@ -46,7 +51,12 @@
           <h3>Room sensors</h3>
           <small>bthome status</small>
         </header>
-        <div class="table" role="table" aria-label="Room sensor status">
+        <div
+          class="table"
+          role="table"
+          aria-label="Room sensor status"
+          :style="{ '--table-columns': sensorColumns.length }"
+        >
           <div class="table-row table-head" role="row">
             <span v-for="col in sensorColumns" :key="col" role="columnheader">{{ col }}</span>
           </div>
@@ -72,7 +82,12 @@
           <h3>Thermostat</h3>
           <small>thermostat status</small>
         </header>
-        <div class="table" role="table" aria-label="Thermostat status">
+        <div
+          class="table"
+          role="table"
+          aria-label="Thermostat status"
+          :style="{ '--table-columns': thermostatColumns.length }"
+        >
           <div class="table-row table-head" role="row">
             <span v-for="col in thermostatColumns" :key="col" role="columnheader">{{ col }}</span>
           </div>

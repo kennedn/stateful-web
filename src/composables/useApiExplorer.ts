@@ -426,6 +426,7 @@ export function useApiExplorer() {
     responseText,
     authUsername,
     authPassword,
+    authHeader,
     rangeInfo,
     rangeCode,
     rangeWithValue,
