@@ -77,10 +77,43 @@ pre {
   max-width: 900px;
   margin: 0 auto 0.75rem;
 
-  h1 {
-    margin: 0 0 0.25rem;
-    font-size: 1.5rem;
-    color: white;
+  .mode-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.4rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-muted);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+
+    .divider {
+      opacity: 0.7;
+      margin: 0 0.15rem;
+    }
+
+    .mode-btn {
+      border: none;
+      background: none;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      transition: background 0.2s, color 0.2s;
+
+      &.active {
+        background: white;
+        color: #0f433f;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+      }
+
+      &:focus-visible {
+        outline: 2px solid #f2e8ff;
+        outline-offset: 2px;
+      }
+    }
   }
 }
 
@@ -178,6 +211,124 @@ pre {
 
   &:not(:active) {
     transform: scale(1);
+  }
+}
+
+//
+// THERMOSTAT MODE
+//
+.thermostat-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  .thermostat-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    h2 {
+      margin: 0;
+    }
+
+    .eyebrow {
+      margin: 0;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.8rem;
+    }
+
+    .refresh {
+      background: white;
+      color: #0f433f;
+      border: none;
+      border-radius: 999px;
+      padding: 0.55rem 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .helper-text {
+    margin: 0;
+    color: var(--text-muted);
+  }
+
+  .callout {
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+
+    &.error {
+      background: rgba(255, 128, 128, 0.15);
+      border: 1px solid rgba(255, 128, 128, 0.4);
+    }
+  }
+
+  .thermostat-grid {
+    display: grid;
+    gap: 0.75rem;
+
+    @media (min-width: 960px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .panel {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 0.85rem;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+
+    header {
+      margin-bottom: 0.5rem;
+
+      h3 {
+        margin: 0;
+      }
+
+      small {
+        color: var(--text-muted);
+      }
+    }
+  }
+
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    display: grid;
+    gap: 0.3rem;
+
+    .table-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+      gap: 0.25rem;
+      padding: 0.35rem 0.5rem;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.15);
+      font-size: 0.95rem;
+    }
+
+    .table-head {
+      font-weight: 700;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .table-empty {
+      padding: 0.5rem;
+      color: var(--text-muted);
+    }
   }
 }
 
