@@ -19,14 +19,10 @@ export function useApiExplorer() {
   const authHeader = ref<string | null>(null);
 
   const pathCache = ref<Record<string, string[]>>({});
-  const rowStates = ref<Record<string, { withValue: boolean; value: string }>>(
-    {},
-  );
   const childInfo = ref<
     Record<string, { hasChildren: boolean; list: string[] | null }>
   >({});
 
-  let currentNavToken = 0;
   let dragState:
     | null
     | {
@@ -255,13 +251,9 @@ export function useApiExplorer() {
   async function postCode(
     pathSegments: string[],
     code: string,
-    extraValue: string | null,
   ) {
     const basePath = pathToString(pathSegments);
     let query = basePath + '?code=' + encodeURIComponent(code);
-    if (extraValue !== null && extraValue !== '') {
-      query += '&value=' + encodeURIComponent(extraValue);
-    }
 
     const { ok, status, json, text } = await fetchRaw(query, {
       method: 'POST',
@@ -276,18 +268,10 @@ export function useApiExplorer() {
     setGlobalResult(label, body);
   }
 
-  function getRowState(key: string) {
-    if (!rowStates.value[key]) {
-      rowStates.value[key] = { withValue: false, value: '' };
-    }
-    return rowStates.value[key];
-  }
-
-  async function loadChildInfo(pathSegments: string[], itemsArr: string[], navToken: number) {
+  async function loadChildInfo(pathSegments: string[], itemsArr: string[]) {
     const info: Record<string, { hasChildren: boolean; list: string[] | null }> =
       {};
     for (const item of itemsArr) {
-      if (navToken !== currentNavToken) return;
       const childSegments = [...pathSegments, item];
       const childPath = pathToString(childSegments);
       let childList: string[] | null = null;
@@ -301,9 +285,7 @@ export function useApiExplorer() {
         list: childList,
       };
     }
-    if (navToken === currentNavToken) {
-      childInfo.value = info;
-    }
+    childInfo.value = info;
   }
 
   async function navigateTo(
@@ -311,7 +293,6 @@ export function useApiExplorer() {
     knownItems: string[] | null = null,
     push = true,
   ) {
-    const navToken = ++currentNavToken;
     loading.value = true;
     errorMessage.value = '';
     try {
@@ -319,29 +300,23 @@ export function useApiExplorer() {
       const resolvedItems =
         knownItems || ((await fetchList(path)) as string[]);
 
-      if (navToken !== currentNavToken) return;
-
       currentPathSegments.value = pathSegments;
       items.value = resolvedItems;
-      rowStates.value = {};
       childInfo.value = {};
 
-      if (push && navToken === currentNavToken) {
+      if (push) {
         history.pushState({ pathSegments }, '', '#' + path);
       }
 
       if (!rangeInfo.value.isRange) {
-        await loadChildInfo(pathSegments, resolvedItems, navToken);
+        await loadChildInfo(pathSegments, resolvedItems);
       }
     } catch (e: any) {
-      if (navToken !== currentNavToken) return;
       errorMessage.value = `Error loading ${pathToString(pathSegments)}: ${
         e.message
       }`;
     } finally {
-      if (navToken === currentNavToken) {
         loading.value = false;
-      }
     }
   }
 
@@ -357,14 +332,7 @@ export function useApiExplorer() {
   }
 
   function initTerminalHeight() {
-    setTerminalHeight(
-      parseInt(
-        getComputedStyle(document.documentElement).getPropertyValue(
-          '--terminal-height',
-        ),
-        10,
-      ) || 220,
-    );
+    setTerminalHeight(window.innerHeight * 0.25);
   }
 
   function handleMouseMove(e: MouseEvent) {
@@ -462,7 +430,6 @@ export function useApiExplorer() {
     rangeCode,
     rangeWithValue,
     rangeValue,
-    rowStates,
     childInfo,
     showAuthPanel,
 
@@ -470,7 +437,6 @@ export function useApiExplorer() {
     navigateTo,
     postCode,
     handleAuthSubmit,
-    getRowState,
     setRowBackgroundFromEvent,
 
     // terminal drag handlers

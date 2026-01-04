@@ -20,14 +20,13 @@
           :range-code="rangeCode"
           :range-with-value="rangeWithValue"
           :range-value="rangeValue"
-          :row-states="rowStates"
           :child-info="childInfo"
           :current-path="currentPathSegments"
           @update:rangeCode="rangeCode = $event"
           @update:rangeWithValue="rangeWithValue = $event"
           @update:rangeValue="rangeValue = $event"
           @post="postCode"
-          @navigate="(segPath, knownItems) => navigateTo(segPath, knownItems, true)"
+          @navigate="navigateTo"
           @setRowBackground="setRowBackgroundFromEvent"
         />
       </main>
@@ -67,7 +66,6 @@ const {
   rangeCode,
   rangeWithValue,
   rangeValue,
-  rowStates,
   childInfo,
   showAuthPanel,
   navigateTo,

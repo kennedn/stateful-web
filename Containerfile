@@ -1,5 +1,5 @@
 # ---- Build stage ----------------------------------------------------
-FROM node:20-alpine AS build
+FROM docker.io/library/node:20-alpine AS build
 
 # Workdir inside the builder image
 WORKDIR /app
@@ -17,7 +17,7 @@ RUN npm run build
 
 
 # ---- Runtime stage (nginx) ------------------------------------------
-FROM nginx:alpine
+FROM docker.io/library/nginx:alpine
 
 # Remove default nginx index if present
 RUN rm -rf /usr/share/nginx/html/*

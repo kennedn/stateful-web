@@ -8,7 +8,7 @@
   --text-muted: #d0d9e5;
   --terminal-bg: #393b3d;
   --code-bg: rgba(240, 246, 252, 0.05);
-  --terminal-height: 20vh;
+  --terminal-height: 220px;
 }
 
 //
@@ -182,10 +182,6 @@ pre {
 }
 
 @media (min-width: 900px) {
-
-  :root {
-    --terminal-height: 35vh !important;
-  }
 
   /* Two-column layout (already added earlier, included here for completeness) */
   .items {
