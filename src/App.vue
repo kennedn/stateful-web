@@ -12,7 +12,6 @@
           >
             stateful
           </button>
-          <span class="divider" aria-hidden="true">|</span>
           <button
             type="button"
             role="tab"

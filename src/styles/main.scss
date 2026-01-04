@@ -76,27 +76,6 @@ pre {
 .header {
   max-width: 250px;
   margin: 0 auto 0.75rem;
-  background-image:
-    linear-gradient(to right, white 2px, transparent 2px),
-    linear-gradient(to right, white 2px, transparent 2px),
-    linear-gradient(to left, white 2px, transparent 2px),
-    linear-gradient(to left, white 2px, transparent 2px),
-    linear-gradient(to bottom, white 2px, transparent 2px),
-    linear-gradient(to bottom, white 2px, transparent 2px),
-    linear-gradient(to top, white 2px, transparent 2px),
-    linear-gradient(to top, white 2px, transparent 2px);
-  background-position:
-    0 0,
-    0 100%,
-    100% 0,
-    100% 100%,
-    0 0,
-    100% 0,
-    0 100%,
-    100% 100%;
-  background-repeat: no-repeat;
-  background-size: 16px 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 
   .mode-toggle {
     display: flex;
@@ -106,23 +85,16 @@ pre {
     letter-spacing: 0.03em;
     padding: .65rem .65rem;
 
-    .divider {
-      display: none; // optional: no divider needed when buttons are 50/50
-      opacity: 0.7;
-      margin: 0 0.15rem;
-    }
-
     .mode-btn {
-      border: none;
+      border: 1px solid rgba(255, 255, 255, 0.14);
       background: none;
       color: inherit;
       font: inherit;
       cursor: pointer;
       padding: 0.35rem 0.85rem;
-      border-radius: 0; // removed radius
       transition: background 0.2s, color 0.2s;
-      flex: 1 0 50%; // always half of parent when there are two
-      height: 100%;  // fill parent height
+      flex: 1 0 50%;
+      height: 100%;
       padding: .65rem;
 
       &.active {
@@ -194,27 +166,9 @@ pre {
   overflow: hidden;
   color: white;
   background-color: var(--card-bg);
-  background-image:
-    linear-gradient(to right, white 2px, transparent 2px),
-    linear-gradient(to right, white 2px, transparent 2px),
-    linear-gradient(to left, white 2px, transparent 2px),
-    linear-gradient(to left, white 2px, transparent 2px),
-    linear-gradient(to bottom, white 2px, transparent 2px),
-    linear-gradient(to bottom, white 2px, transparent 2px),
-    linear-gradient(to top, white 2px, transparent 2px),
-    linear-gradient(to top, white 2px, transparent 2px);
-  background-position:
-    0 0,
-    0 100%,
-    100% 0,
-    100% 100%,
-    0 0,
-    100% 0,
-    0 100%,
-    100% 100%;
-  background-repeat: no-repeat;
-  background-size: 16px 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+
   transition: transform 0.2s;
   cursor: pointer;
 
@@ -243,7 +197,6 @@ pre {
 .thermostat-view {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
 
   .thermostat-heading {
     display: flex;
@@ -307,27 +260,7 @@ pre {
     align-items: center;
     padding: 0.95rem 1rem;
     background: var(--card-bg);
-    background-image:
-      linear-gradient(to right, white 2px, transparent 2px),
-      linear-gradient(to right, white 2px, transparent 2px),
-      linear-gradient(to left, white 2px, transparent 2px),
-      linear-gradient(to left, white 2px, transparent 2px),
-      linear-gradient(to bottom, white 2px, transparent 2px),
-      linear-gradient(to bottom, white 2px, transparent 2px),
-      linear-gradient(to top, white 2px, transparent 2px),
-      linear-gradient(to top, white 2px, transparent 2px);
-    background-position:
-      0 0,
-      0 100%,
-      100% 0,
-      100% 100%,
-      0 0,
-      100% 0,
-      0 100%,
-      100% 100%;
-    background-repeat: no-repeat;
-    background-size: 16px 16px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.14);
 
     &:nth-child(3n + 1) {
       background-color: #125250;
@@ -351,11 +284,11 @@ pre {
   }
 
   .device-card.radiator {
-    border-left-color: #ff7b9c;
+    //border-left-color: #ff7b9c;
   }
 
   .device-card.thermostat {
-    border-left-color: #71d8ff;
+    //border-left-color: #71d8ff;
   }
 
   .device-icon {
