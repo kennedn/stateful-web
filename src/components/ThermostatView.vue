@@ -2,27 +2,51 @@
   <div class="thermostat-view">
     <div class="thermostat-heading">
       <div>
-        <h2>Home heating overview</h2>
+        <h2>Home devices overview</h2>
+        <p class="helper-text">
+          Build cards from thermostat, radiator, and bulb endpoints with swappable data blocks.
+        </p>
       </div>
       <button class="refresh" type="button" :disabled="loading" @click="emit('refresh')">
         {{ loading ? 'Loading…' : 'Refresh' }}
       </button>
     </div>
 
-    <div v-if="errorMessage" class="callout error">{{ errorMessage }}</div>
-    <div v-else-if="loading" class="callout">Loading thermostat data…</div>
+    <div class="filter-row" role="group" aria-label="Device type filter">
+      <button
+        class="filter-chip"
+        type="button"
+        :aria-pressed="selectedTypes.length === availableTypes.length"
+        @click="emit('select-all')"
+      >
+        All types
+      </button>
+      <button
+        v-for="type in availableTypes"
+        :key="type"
+        class="filter-chip"
+        type="button"
+        :aria-pressed="selectedTypes.includes(type)"
+        @click="emit('toggle-type', type)">
+        <span class="chip-dot" :class="type"></span>
+        {{ formatTypeLabel(type) }}
+      </button>
+    </div>
 
-    <div v-else class="thermostat-grid" aria-label="Heating devices">
-      <div v-if="deviceCards.length" class="device-grid">
+    <div v-if="errorMessage" class="callout error">{{ errorMessage }}</div>
+    <div v-else-if="loading" class="callout">Loading device data…</div>
+
+    <div v-else class="thermostat-grid" aria-label="Device cards">
+      <div v-if="cards.length" class="device-grid">
         <article
-          v-for="card in deviceCards"
-          :key="card.kind === 'radiator' ? `${card.id}-${card.name}` : `thermostat-${card.name}`"
+          v-for="card in cards"
+          :key="card.id"
           class="device-card"
-          :class="[{ 'is-heating': card.heating }, card.kind]"
+          :class="[{ 'is-heating': card.isActive }, card.kind]"
         >
-          <div class="device-icon" :class="card.kind" aria-hidden="true">
+          <div class="device-icon" :class="card.icon" aria-hidden="true">
             <svg
-              v-if="isRadiator(card)"
+              v-if="card.icon === 'radiator'"
               width="64"
               height="64"
               viewBox="0 0 24 24"
@@ -35,7 +59,7 @@
               />
             </svg>
             <svg
-              v-else
+              v-else-if="card.icon === 'thermostat'"
               width="64"
               height="64"
               viewBox="0 0 24 24"
@@ -47,43 +71,52 @@
                 fill="currentColor"
               />
             </svg>
+            <svg
+              v-else
+              width="64"
+              height="64"
+              viewBox="0 0 24 24"
+              role="img"
+              aria-label="Light bulb icon"
+            >
+              <path
+                d="M9 21a1 1 0 0 1-1-1v-1.29c-2.92-1.62-4-5.35-2.38-8.27 1.62-2.91 5.35-3.97 8.26-2.35 2.92 1.62 3.97 5.35 2.35 8.27A6 6 0 0 1 14 18.71V20a1 1 0 0 1-1 1Zm4-2v-1.13c0-.37.2-.72.52-.9a4 4 0 0 0 1.84-2.67c.4-2.2-1.08-4.32-3.28-4.72a4 4 0 0 0-4.72 3.28 3.98 3.98 0 0 0 1.84 4.11c.33.18.52.53.52.9V19Zm-2.38-.5h.76a.62.62 0 0 0 .62-.62v-.04a.62.62 0 0 0-.62-.62h-.76a.62.62 0 0 0-.62.62v.04c0 .34.28.62.62.62Z"
+                fill="currentColor"
+              />
+            </svg>
           </div>
 
           <div class="device-body">
             <div class="device-heading">
               <div>
-                <p class="eyebrow">{{ isRadiator(card) ? 'Radiator' : 'Thermostat' }}</p>
+                <p class="eyebrow">{{ card.eyebrow }}</p>
                 <h4>{{ card.name }}</h4>
               </div>
-              <small class="device-meta">
-                {{ isRadiator(card) ? `ID: ${card.id || '—'}` : `Mode: ${formatNumber(card.mode)}` }}
-              </small>
+              <small v-if="card.meta" class="device-meta">{{ card.meta }}</small>
             </div>
 
             <div class="stat-grid">
-              <div class="stat">
-                <p class="label">{{ isRadiator(card) ? 'Room temp' : 'Temperature' }}</p>
-                <p class="value">{{ formatTemperature(card.current) }}</p>
-              </div>
-              <div class="stat">
-                <p class="label">Target</p>
-                <p class="value">{{ formatTemperature(card.target) }}</p>
-              </div>
-              <div v-if="isRadiator(card)" class="stat">
-                <p class="label">BTHome</p>
-                <p class="value">{{ formatBtHomeTemperature(card.sensorTemperature) }}</p>
-              </div>
-              <div v-else class="stat">
-                <p class="label">BTHome</p>
-                <p class="value">{{ formatBtHomeTemperature(card.sensorTemperature) }}</p>
-              </div>
-              <div class="stat">
-                <p class="label">Heating</p>
+              <div v-if="card.status" class="stat">
+                <p class="label">Status</p>
                 <p class="value">
-                  <span class="heating-pill" :class="heatingClass(card.heating)">
+                  <span class="heating-pill" :class="card.status.tone">
                     <span class="pulse" aria-hidden="true"></span>
-                    {{ formatHeating(card.heating) }}
+                    {{ card.status.label }}
                   </span>
+                </p>
+              </div>
+              <div v-for="(element, index) in card.elements" :key="`${card.id}-el-${index}`" class="stat">
+                <p class="label">{{ element.label }}</p>
+                <p class="value">
+                  <span
+                    v-if="element.tone"
+                    class="heating-pill"
+                    :class="element.tone"
+                  >
+                    <span class="pulse" aria-hidden="true"></span>
+                    {{ element.value }}
+                  </span>
+                  <span v-else>{{ element.value }}</span>
                 </p>
               </div>
             </div>
@@ -91,90 +124,34 @@
         </article>
       </div>
 
-      <div v-else class="table-empty">No thermostat data.</div>
+      <div v-else class="table-empty">No device data.</div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, toRefs } from 'vue';
-import type {
-  BthomeRow,
-  RadiatorRow,
-  ThermostatRow,
-} from '../composables/useThermostatStatus';
-
-type RadiatorCard = RadiatorRow & { sensorTemperature: number | null };
-type DeviceCard = (RadiatorCard & { kind: 'radiator' }) | (ThermostatRow & { kind: 'thermostat' });
+import { toRefs } from 'vue';
+import type { DeviceCard, DeviceType } from '../composables/useDeviceCards';
 
 const props = defineProps<{
   loading: boolean;
   errorMessage: string;
-  radiatorStatus: RadiatorRow[];
-  bthomeStatus: BthomeRow[];
-  thermostatStatus: ThermostatRow | null;
+  cards: DeviceCard[];
+  availableTypes: DeviceType[];
+  selectedTypes: DeviceType[];
 }>();
 
-const emit = defineEmits<{ (e: 'refresh'): void }>();
+const emit = defineEmits<{
+  (e: 'refresh'): void;
+  (e: 'toggle-type', type: DeviceType): void;
+  (e: 'select-all'): void;
+}>();
 
-const { loading, errorMessage, radiatorStatus, bthomeStatus, thermostatStatus } = toRefs(props);
+const { loading, errorMessage, cards, availableTypes, selectedTypes } = toRefs(props);
 
-const bthomeByName = computed(() => {
-  const mapping = new Map<string, number | null>();
-  bthomeStatus.value.forEach((row) => {
-    mapping.set(row.name, row.temperature ?? null);
-  });
-  return mapping;
-});
-
-const radiatorCards = computed<RadiatorCard[]>(() =>
-  radiatorStatus.value.map((radiator) => ({
-    ...radiator,
-    sensorTemperature: bthomeByName.value.get(radiator.name) ?? null,
-  })),
-);
-
-const deviceCards = computed<DeviceCard[]>(() => {
-  const devices: DeviceCard[] = radiatorCards.value.map((radiator) => ({
-    ...radiator,
-    kind: 'radiator',
-  }));
-
-  if (thermostatStatus.value) {
-    devices.unshift({ ...thermostatStatus.value, kind: 'thermostat' });
-  }
-
-  return devices;
-});
-
-function formatNumber(value: number | null) {
-  if (value === null || value === undefined) return '—';
-  return value;
-}
-
-function formatTemperature(value: number | null) {
-  if (value === null || value === undefined) return '—';
-  const celsius = Number(value) / 10;
-  return `${celsius.toFixed(2)}°C`;
-}
-
-function formatBtHomeTemperature(value: number | null) {
-  if (value === null || value === undefined) return '—';
-  const celsius = Number(value);
-  return `${celsius.toFixed(2)}°C`;
-}
-
-function formatHeating(value: boolean | null) {
-  if (value === null || value === undefined) return 'Unknown';
-  return value ? 'Heating' : 'Idle';
-}
-
-function heatingClass(value: boolean | null) {
-  if (value === null || value === undefined) return 'unknown';
-  return value ? 'on' : 'off';
-}
-
-function isRadiator(card: DeviceCard): card is RadiatorCard & { kind: 'radiator' } {
-  return card.kind === 'radiator';
+function formatTypeLabel(type: DeviceType) {
+  if (type === 'bulb') return 'Bulb';
+  if (type === 'radiator') return 'Radiator';
+  return 'Thermostat';
 }
 </script>

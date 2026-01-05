@@ -19,7 +19,7 @@
             :class="['mode-btn', { active: mode === 'thermostat' }]"
             @click="mode = 'thermostat'"
           >
-            thermostat
+            devices
           </button>
         </div>
       </div>
