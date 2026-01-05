@@ -20,13 +20,6 @@ export function useApiExplorer() {
     Record<string, { hasChildren: boolean; list: string[] | null }>
   >({});
 
-  let dragState:
-    | null
-    | {
-        startY: number;
-        startHeight: number;
-      } = null;
-
   function loadCache() {
     try {
       const raw = window.localStorage.getItem(CACHE_KEY);
@@ -46,43 +39,6 @@ export function useApiExplorer() {
     } catch {
       // ignore
     }
-  }
-
-  function setTerminalHeight(px: number) {
-    const clamped = Math.min(Math.max(px, 120), window.innerHeight * 0.8);
-    document.documentElement.style.setProperty(
-      '--terminal-height',
-      clamped + 'px',
-    );
-  }
-
-  function startDrag(clientY: number) {
-    dragState = {
-      startY: clientY,
-      startHeight:
-        parseInt(
-          getComputedStyle(document.documentElement).getPropertyValue(
-            '--terminal-height',
-          ),
-          10,
-        ) || 220,
-    };
-    document.body.style.userSelect = 'none';
-    document.body.style.touchAction = 'none';
-  }
-
-  function moveDrag(clientY: number) {
-    if (!dragState) return;
-    const dy = dragState.startY - clientY;
-    const newHeight = dragState.startHeight + dy;
-    setTerminalHeight(newHeight);
-  }
-
-  function endDrag() {
-    if (!dragState) return;
-    dragState = null;
-    document.body.style.userSelect = '';
-    document.body.style.touchAction = '';
   }
 
   function pathToString(segments: string[]) {
@@ -109,8 +65,6 @@ export function useApiExplorer() {
       // If we get a 401 on ANY request (navigation or background prefetch),
       // expand the terminal and show the unauthorized response for context.
       if (response.status === 401) {
-        setTerminalHeight(window.innerHeight * 0.5);
-
         setGlobalResult(
           `${method} ${url}`,
           `${response.status} ${text || '(no body)'}`,
@@ -280,36 +234,6 @@ export function useApiExplorer() {
     navigateTo(segments, null, false);
   }
 
-  function initTerminalHeight() {
-    setTerminalHeight(window.innerHeight * 0.25);
-  }
-
-  function handleMouseMove(e: MouseEvent) {
-    moveDrag(e.clientY);
-  }
-  function handleMouseUp() {
-    endDrag();
-  }
-  function handleTouchMove(e: TouchEvent) {
-    if (!dragState) return;
-    const touch = e.touches[0];
-    if (!touch) return;
-    e.preventDefault();
-    moveDrag(touch.clientY);
-  }
-  function handleTouchEnd() {
-    endDrag();
-  }
-
-  function handleHandleMouseDown(e: MouseEvent) {
-    startDrag(e.clientY);
-  }
-  function handleHandleTouchStart(e: TouchEvent) {
-    const t = e.touches[0];
-    if (!t) return;
-    startDrag(t.clientY);
-  }
-
   function setRowBackgroundFromEvent(e: Event) {
     const row = e.currentTarget as HTMLElement | null;
     if (!row) return;
@@ -318,24 +242,6 @@ export function useApiExplorer() {
   }
 
   onMounted(async () => {
-    initTerminalHeight();
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-    window.addEventListener('mouseleave', handleMouseUp);
-    window.addEventListener('touchmove', handleTouchMove, { passive: false });
-    window.addEventListener('touchend', handleTouchEnd);
-    window.addEventListener('touchcancel', handleTouchEnd);
-    window.addEventListener('resize', () => {
-      const current =
-        parseInt(
-          getComputedStyle(document.documentElement).getPropertyValue(
-            '--terminal-height',
-          ),
-          10,
-        ) || 220;
-      setTerminalHeight(current);
-    });
     window.addEventListener('popstate', onPopState);
 
     loadCache();
@@ -356,12 +262,6 @@ export function useApiExplorer() {
   });
 
   onBeforeUnmount(() => {
-    window.removeEventListener('mousemove', handleMouseMove);
-    window.removeEventListener('mouseup', handleMouseUp);
-    window.removeEventListener('mouseleave', handleMouseUp);
-    window.removeEventListener('touchmove', handleTouchMove);
-    window.removeEventListener('touchend', handleTouchEnd);
-    window.removeEventListener('touchcancel', handleTouchEnd);
     window.removeEventListener('popstate', onPopState);
   });
 
@@ -383,10 +283,6 @@ export function useApiExplorer() {
     navigateTo,
     postCode,
     setRowBackgroundFromEvent,
-
-    // terminal drag handlers
-    handleHandleMouseDown,
-    handleHandleTouchStart,
   };
 }
 

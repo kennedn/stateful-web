@@ -25,12 +25,7 @@
       @setRowBackground="setRowBackgroundFromEvent"
     />
 
-    <ExplorerPanel
-      :status="statusLabel"
-      :response="responseText"
-      @drag-mouse-down="handleHandleMouseDown"
-      @drag-touch-start="handleHandleTouchStart"
-    />
+    <ExplorerPanel v-if="!authActive" :status="statusLabel" :response="responseText" />
   </div>
 </template>
 
@@ -39,6 +34,8 @@ import ExplorerPanel from './ExplorerPanel.vue';
 import ItemsView from './ItemsView.vue';
 import PathBreadcrumb from './PathBreadcrumb.vue';
 import { useApiExplorer } from '../composables/useApiExplorer';
+
+defineProps<{ authActive: boolean }>();
 
 const {
   currentPathSegments,
@@ -55,7 +52,5 @@ const {
   navigateTo,
   postCode,
   setRowBackgroundFromEvent,
-  handleHandleMouseDown,
-  handleHandleTouchStart,
 } = useApiExplorer();
 </script>

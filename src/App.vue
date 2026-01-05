@@ -25,7 +25,7 @@
       </div>
 
       <main class="main">
-        <StatefulView v-if="mode === 'stateful'" />
+        <StatefulView v-if="mode === 'stateful'" :auth-active="showAuthPrompt" />
         <ThermostatPanel v-else />
       </main>
     </div>
@@ -41,16 +41,51 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import AuthModal from './components/AuthModal.vue';
 import StatefulView from './components/StatefulView.vue';
 import ThermostatPanel from './components/ThermostatPanel.vue';
 import { useAuth } from './composables/useAuth';
 
-const mode = ref<'stateful' | 'thermostat'>('stateful');
+const DEFAULT_MODE: 'stateful' | 'thermostat' = 'stateful';
+const MODE_CACHE_KEY = 'stateful_web_mode_v1';
+const DEFAULT_TERMINAL_HEIGHT = '220px';
+
+const mode = ref<'stateful' | 'thermostat'>(DEFAULT_MODE);
 
 const { username, password, showAuthPrompt, setCredentials, closeAuthPrompt } =
   useAuth();
+
+onMounted(() => {
+  try {
+    const cachedMode = window.localStorage.getItem(MODE_CACHE_KEY);
+    if (cachedMode === 'stateful' || cachedMode === 'thermostat') {
+      mode.value = cachedMode;
+    }
+  } catch {
+    mode.value = DEFAULT_MODE;
+  }
+
+  document.documentElement.style.setProperty(
+    '--terminal-height',
+    DEFAULT_TERMINAL_HEIGHT,
+  );
+});
+
+watch(mode, (value) => {
+  try {
+    window.localStorage.setItem(MODE_CACHE_KEY, value);
+  } catch {
+    // ignore storage errors
+  }
+});
+
+watch(showAuthPrompt, (open) => {
+  document.documentElement.style.setProperty(
+    '--terminal-height',
+    open ? '0px' : DEFAULT_TERMINAL_HEIGHT,
+  );
+});
 
 function handleAuthSubmit(payload: { username: string; password: string }) {
   setCredentials(payload.username, payload.password);
