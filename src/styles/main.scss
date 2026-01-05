@@ -182,13 +182,15 @@ pre {
     background-color: #4e0277;
   }
 
-  &:active {
-    transform: scale(0.98);
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, 0.3);
   }
 
-  &:not(:active) {
-    transform: scale(1);
+  &:active {
+    transform: translateY(2px);
   }
+
 }
 
 //
@@ -249,7 +251,7 @@ pre {
 
   .device-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 0.85rem;
   }
 
