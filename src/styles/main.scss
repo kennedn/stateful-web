@@ -574,8 +574,8 @@ pre {
   right: 0;
   bottom: 0;
   height: var(--terminal-height);
-  min-height: var(--terminal-height);
-  max-height: var(--terminal-height);
+  min-height: 15vh;
+  max-height: 80vh;
   background-color: #393b3d;
   color: white;
   border-top: 1px solid rgba(255, 255, 255, 0.25);
@@ -585,11 +585,31 @@ pre {
   z-index: 1000;
 }
 
+#terminal-handle {
+  height: 18px;
+  cursor: ns-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2c2f31;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+  user-select: none;
+}
+
+#terminal-handle-bar {
+  width: 40px;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.4);
+}
+
 #terminal-body {
   display: flex;
   flex-direction: column;
   padding: 0.35rem 0.6rem 0.6rem;
-  height: 100%;
+  height: calc(100% - 19px);
 }
 
 //

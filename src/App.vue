@@ -52,6 +52,7 @@ const MODE_CACHE_KEY = 'stateful_web_mode_v1';
 const DEFAULT_TERMINAL_HEIGHT = '220px';
 
 const mode = ref<'stateful' | 'thermostat'>(DEFAULT_MODE);
+const terminalHeightBeforeAuth = ref(DEFAULT_TERMINAL_HEIGHT);
 
 const { username, password, showAuthPrompt, setCredentials, closeAuthPrompt } =
   useAuth();
@@ -81,10 +82,20 @@ watch(mode, (value) => {
 });
 
 watch(showAuthPrompt, (open) => {
-  document.documentElement.style.setProperty(
-    '--terminal-height',
-    open ? '0px' : DEFAULT_TERMINAL_HEIGHT,
-  );
+  const root = document.documentElement;
+  const currentHeight =
+    getComputedStyle(root).getPropertyValue('--terminal-height').trim() ||
+    DEFAULT_TERMINAL_HEIGHT;
+
+  if (open) {
+    terminalHeightBeforeAuth.value = currentHeight;
+    root.style.setProperty('--terminal-height', '0px');
+  } else {
+    root.style.setProperty(
+      '--terminal-height',
+      terminalHeightBeforeAuth.value || DEFAULT_TERMINAL_HEIGHT,
+    );
+  }
 });
 
 function handleAuthSubmit(payload: { username: string; password: string }) {

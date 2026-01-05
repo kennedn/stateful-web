@@ -25,7 +25,13 @@
       @setRowBackground="setRowBackgroundFromEvent"
     />
 
-    <ExplorerPanel v-if="!authActive" :status="statusLabel" :response="responseText" />
+    <ExplorerPanel
+      v-if="!authActive"
+      :status="statusLabel"
+      :response="responseText"
+      @drag-mouse-down="handleHandleMouseDown"
+      @drag-touch-start="handleHandleTouchStart"
+    />
   </div>
 </template>
 
@@ -52,5 +58,7 @@ const {
   navigateTo,
   postCode,
   setRowBackgroundFromEvent,
+  handleHandleMouseDown,
+  handleHandleTouchStart,
 } = useApiExplorer();
 </script>

@@ -3,6 +3,8 @@ import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import { useAuth } from './useAuth';
 
 const CACHE_KEY = 'stateful_api_cache_v1';
+const MIN_TERMINAL_HEIGHT = 120;
+const MAX_TERMINAL_RATIO = 0.8;
 
 export function useApiExplorer() {
   const currentPathSegments = ref<string[]>([]);
@@ -19,6 +21,13 @@ export function useApiExplorer() {
   const childInfo = ref<
     Record<string, { hasChildren: boolean; list: string[] | null }>
   >({});
+
+  let dragState:
+    | null
+    | {
+        startY: number;
+        startHeight: number;
+      } = null;
 
   function loadCache() {
     try {
@@ -238,6 +247,92 @@ export function useApiExplorer() {
     navigateTo([...currentPathSegments.value], null, false);
   });
 
+  function setTerminalHeight(px: number) {
+    const clamped = Math.min(
+      Math.max(px, MIN_TERMINAL_HEIGHT),
+      window.innerHeight * MAX_TERMINAL_RATIO,
+    );
+    document.documentElement.style.setProperty(
+      '--terminal-height',
+      clamped + 'px',
+    );
+  }
+
+  function startDrag(clientY: number) {
+    dragState = {
+      startY: clientY,
+      startHeight:
+        parseInt(
+          getComputedStyle(document.documentElement).getPropertyValue(
+            '--terminal-height',
+          ),
+          10,
+        ) || MIN_TERMINAL_HEIGHT,
+    };
+    document.body.style.userSelect = 'none';
+    document.body.style.touchAction = 'none';
+  }
+
+  function moveDrag(clientY: number) {
+    if (!dragState) return;
+    const dy = dragState.startY - clientY;
+    const newHeight = dragState.startHeight + dy;
+    setTerminalHeight(newHeight);
+  }
+
+  function endDrag() {
+    if (!dragState) return;
+    dragState = null;
+    document.body.style.userSelect = '';
+    document.body.style.touchAction = '';
+  }
+
+  function handleHandleMouseDown(e: MouseEvent) {
+    startDrag(e.clientY);
+  }
+
+  function handleHandleTouchStart(e: TouchEvent) {
+    const t = e.touches[0];
+    if (!t) return;
+    startDrag(t.clientY);
+  }
+
+  function handleMouseMove(e: MouseEvent) {
+    moveDrag(e.clientY);
+  }
+
+  function handleMouseUp() {
+    endDrag();
+  }
+
+  function handleTouchMove(e: TouchEvent) {
+    if (!dragState) return;
+    const touch = e.touches[0];
+    if (!touch) return;
+    e.preventDefault();
+    moveDrag(touch.clientY);
+  }
+
+  function handleTouchEnd() {
+    endDrag();
+  }
+
+  function clampExistingTerminalHeight() {
+    const current =
+      parseInt(
+        getComputedStyle(document.documentElement).getPropertyValue(
+          '--terminal-height',
+        ),
+        10,
+      ) || MIN_TERMINAL_HEIGHT;
+
+    if (current <= 0) {
+      return;
+    }
+
+    setTerminalHeight(current);
+  }
+
   function setRowBackgroundFromEvent(e: Event) {
     const row = e.currentTarget as HTMLElement | null;
     if (!row) return;
@@ -246,6 +341,15 @@ export function useApiExplorer() {
   }
 
   onMounted(async () => {
+    clampExistingTerminalHeight();
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('mouseleave', handleMouseUp);
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchend', handleTouchEnd);
+    window.addEventListener('touchcancel', handleTouchEnd);
+    window.addEventListener('resize', clampExistingTerminalHeight);
     window.addEventListener('popstate', onPopState);
 
     loadCache();
@@ -266,6 +370,13 @@ export function useApiExplorer() {
   });
 
   onBeforeUnmount(() => {
+    window.removeEventListener('mousemove', handleMouseMove);
+    window.removeEventListener('mouseup', handleMouseUp);
+    window.removeEventListener('mouseleave', handleMouseUp);
+    window.removeEventListener('touchmove', handleTouchMove);
+    window.removeEventListener('touchend', handleTouchEnd);
+    window.removeEventListener('touchcancel', handleTouchEnd);
+    window.removeEventListener('resize', clampExistingTerminalHeight);
     window.removeEventListener('popstate', onPopState);
   });
 
@@ -287,6 +398,10 @@ export function useApiExplorer() {
     navigateTo,
     postCode,
     setRowBackgroundFromEvent,
+
+    // terminal drag handlers
+    handleHandleMouseDown,
+    handleHandleTouchStart,
   };
 }
 
