@@ -5,9 +5,11 @@
     :cards="filteredCards"
     :available-types="deviceTypes"
     :selected-types="selectedTypes"
+    :power-loading-keys="powerLoading"
     @refresh="refresh"
     @toggle-type="toggleType"
     @select-all="selectAll"
+    @toggle-power="togglePower"
   />
 </template>
 
@@ -15,9 +17,10 @@
 import { computed, onMounted, ref } from 'vue';
 import ThermostatView from './ThermostatView.vue';
 import { DEVICE_TYPES, useDeviceCards } from '../composables/useDeviceCards';
-import type { DeviceType } from '../composables/useDeviceCards';
+import type { DeviceType, PowerControl } from '../composables/useDeviceCards';
 
-const { loading, errorMessage, cards, refresh } = useDeviceCards();
+const { loading, errorMessage, cards, powerLoading, togglePower: setPowerState, refresh } =
+  useDeviceCards();
 const deviceTypes = DEVICE_TYPES;
 const selectedTypes = ref<DeviceType[]>([...DEVICE_TYPES]);
 
@@ -35,6 +38,10 @@ function toggleType(type: DeviceType) {
 
 function selectAll() {
   selectedTypes.value = [...DEVICE_TYPES];
+}
+
+function togglePower(control: PowerControl) {
+  setPowerState(control);
 }
 
 onMounted(() => {

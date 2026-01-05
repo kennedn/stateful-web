@@ -4,6 +4,7 @@ import { useAuth } from './useAuth';
 type RadiatorRow = {
   name: string;
   id: string;
+  host: string;
   onoff: number | null;
   mode: number | null;
   current: number | null;
@@ -33,8 +34,8 @@ type ThermostatRow = {
 
 type MerossRow = {
   name: string;
+  device: string;
   onoff: number | null;
-  rgb: number | null;
   temperature: number | null;
   luminance: number | null;
 };
@@ -48,6 +49,7 @@ export type CardElement = {
   label: string;
   value: string;
   tone?: StatusTone;
+  power?: PowerControl;
 };
 
 export type DeviceCard = {
@@ -62,6 +64,17 @@ export type DeviceCard = {
   isActive: boolean;
 };
 
+type PowerTarget =
+  | { type: 'thermostat' }
+  | { type: 'radiator'; host: string }
+  | { type: 'bulb'; device: string };
+
+export type PowerControl = {
+  key: string;
+  target: PowerTarget;
+  state: number | null;
+};
+
 export const DEVICE_TYPES: DeviceType[] = ['bulb', 'thermostat', 'radiator'];
 
 const MEROSS_DEVICES = ['office', 'hall_down', 'hall_up'];
@@ -70,6 +83,7 @@ export function useDeviceCards() {
   const loading = ref(false);
   const errorMessage = ref('');
   const cards = ref<DeviceCard[]>([]);
+  const powerLoading = ref(new Set<string>());
 
   const { requestWithAuth, authVersion } = useAuth();
 
@@ -91,6 +105,7 @@ export function useDeviceCards() {
     return data.map((entry: any) => ({
       name: String(entry?.name || '').toUpperCase(),
       id: entry?.status?.id ?? '',
+      host: String(entry?.name || ''),
       onoff: entry?.status?.onoff ?? null,
       mode: entry?.status?.mode ?? null,
       current: entry?.status?.temperature?.current ?? null,
@@ -129,8 +144,8 @@ export function useDeviceCards() {
     const data = json?.data || {};
     return {
       name: String(name || '').toUpperCase(),
+      device: name,
       onoff: data.onoff ?? null,
-      rgb: data.rgb ?? null,
       temperature: data.temperature ?? null,
       luminance: data.luminance ?? null,
     };
@@ -168,20 +183,32 @@ export function useDeviceCards() {
     return value === true || value === 1 ? 'on' : 'off';
   }
 
-  function formatRgb(value: number | null | undefined) {
+  function formatLightValue(value: number | null | undefined) {
     if (value === null || value === undefined) return '—';
-    const hex = Number(value).toString(16).padStart(6, '0');
-    return `#${hex.toUpperCase()}`;
+    return String(value);
   }
 
-  function formatLuminance(value: number | null | undefined) {
-    if (value === null || value === undefined || value < 0) return '—';
-    return `${value} lx`;
+  function createPowerKey(target: PowerTarget) {
+    if (target.type === 'radiator') return `${target.type}:${target.host}`;
+    if (target.type === 'bulb') return `${target.type}:${target.device}`;
+    return target.type;
   }
 
-  function formatKelvin(value: number | null | undefined) {
-    if (value === null || value === undefined) return '—';
-    return `${value} K`;
+  function createPowerControl(target: PowerTarget, state: number | null): PowerControl {
+    return {
+      key: createPowerKey(target),
+      target,
+      state,
+    };
+  }
+
+  function buildPowerElement(control: PowerControl): CardElement {
+    return {
+      label: 'Power',
+      value: formatBoolean(control.state),
+      tone: formatTone(control.state),
+      power: control,
+    };
   }
 
   function buildThermostatCard(
@@ -189,6 +216,7 @@ export function useDeviceCards() {
     sensorTemperature: number | null | undefined,
   ): DeviceCard {
     const heatingTone = formatTone(status.heating);
+    const powerControl = createPowerControl({ type: 'thermostat' }, status.onoff);
     return {
       id: 'thermostat-main',
       name: 'Thermostat',
@@ -201,11 +229,7 @@ export function useDeviceCards() {
         { label: 'Temperature', value: formatTemperature(status.current) },
         { label: 'Target', value: formatTemperature(status.target) },
         { label: 'BTHome', value: formatBtHomeTemperature(sensorTemperature) },
-        {
-          label: 'Power',
-          value: formatBoolean(status.onoff),
-          tone: formatTone(status.onoff),
-        },
+        buildPowerElement(powerControl),
       ],
       isActive: heatingTone === 'on',
     };
@@ -216,6 +240,7 @@ export function useDeviceCards() {
     sensorTemperature: number | null | undefined,
   ): DeviceCard {
     const heatingTone = formatTone(radiator.heating);
+    const powerControl = createPowerControl({ type: 'radiator', host: radiator.host }, radiator.onoff);
     return {
       id: `radiator-${radiator.id || radiator.name}`,
       name: radiator.name,
@@ -228,32 +253,29 @@ export function useDeviceCards() {
         { label: 'Room temp', value: formatTemperature(radiator.current) },
         { label: 'Target', value: formatTemperature(radiator.target) },
         { label: 'BTHome', value: formatBtHomeTemperature(sensorTemperature) },
-        {
-          label: 'Power',
-          value: formatBoolean(radiator.onoff),
-          tone: formatTone(radiator.onoff),
-        },
+        buildPowerElement(powerControl),
       ],
       isActive: heatingTone === 'on',
     };
   }
 
   function buildMerossCard(meross: MerossRow): DeviceCard {
-    const powerTone = formatTone(meross.onoff);
+    const powerControl = createPowerControl(
+      { type: 'bulb', device: meross.device },
+      meross.onoff,
+    );
     return {
       id: `meross-${meross.name.toLowerCase()}`,
       name: meross.name,
       eyebrow: 'Bulb',
       kind: 'bulb',
       icon: 'bulb',
-      meta: `Color: ${formatRgb(meross.rgb)}`,
-      status: { label: formatBoolean(meross.onoff, ['On', 'Off']), tone: powerTone },
       elements: [
-        { label: 'Temperature', value: formatKelvin(meross.temperature) },
-        { label: 'Luminance', value: formatLuminance(meross.luminance) },
-        { label: 'RGB', value: formatRgb(meross.rgb) },
+        { label: 'Temperature', value: formatLightValue(meross.temperature) },
+        { label: 'Luminance', value: formatLightValue(meross.luminance) },
+        buildPowerElement(powerControl),
       ],
-      isActive: powerTone === 'on',
+      isActive: formatTone(meross.onoff) === 'on',
     };
   }
 
@@ -318,6 +340,47 @@ export function useDeviceCards() {
     }
   }
 
+  function setPowerLoading(key: string, busy: boolean) {
+    const next = new Set(powerLoading.value);
+    if (busy) {
+      next.add(key);
+    } else {
+      next.delete(key);
+    }
+    powerLoading.value = next;
+  }
+
+  async function togglePower(control: PowerControl) {
+    const nextState = control.state === 1 ? 0 : 1;
+    let path = '';
+
+    if (control.target.type === 'thermostat') {
+      path = `/thermostat?code=power&onoff=${nextState}`;
+    } else if (control.target.type === 'radiator') {
+      path = `/radiator?hosts=${encodeURIComponent(control.target.host)}&code=power&onoff=${nextState}`;
+    } else {
+      path = `/meross/${control.target.device}?code=power&onoff=${nextState}`;
+    }
+
+    setPowerLoading(control.key, true);
+    try {
+      const { response, json, text } = await requestWithAuth(path, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        const body = json ? JSON.stringify(json) : text;
+        throw new Error(`${response.status} on ${path}: ${body || 'unknown error'}`);
+      }
+
+      await refresh();
+    } catch (e: any) {
+      errorMessage.value = e?.message || 'Unable to update power state';
+    } finally {
+      setPowerLoading(control.key, false);
+    }
+  }
+
   watch(authVersion, () => {
     refresh();
   });
@@ -326,8 +389,9 @@ export function useDeviceCards() {
     loading,
     errorMessage,
     cards,
+    powerLoading,
+    togglePower,
     refresh,
   };
 }
-
 export type { RadiatorRow, BthomeRow, ThermostatRow, MerossRow };
