@@ -78,6 +78,7 @@ export type PowerControl = {
 export const DEVICE_TYPES: DeviceType[] = ['bulb', 'thermostat', 'radiator'];
 
 const MEROSS_DEVICES = ['office', 'hall_down', 'hall_up'];
+const RADIATOR_HOSTS = ['kitchen', 'livingroom', 'office', 'bedroom'];
 
 export function useDeviceCards() {
   const loading = ref(false);
@@ -100,19 +101,19 @@ export function useDeviceCards() {
     return json;
   }
 
-  function mapRadiator(json: any): RadiatorRow[] {
-    const data = Array.isArray(json?.data) ? json.data : [];
-    return data.map((entry: any) => ({
-      name: String(entry?.name || '').toUpperCase(),
-      id: entry?.status?.id ?? '',
-      host: String(entry?.name || ''),
-      onoff: entry?.status?.onoff ?? null,
-      mode: entry?.status?.mode ?? null,
-      current: entry?.status?.temperature?.current ?? null,
-      target: entry?.status?.temperature?.target ?? null,
-      heating: entry?.status?.temperature?.heating ?? null,
-      openWindow: entry?.status?.temperature?.openWindow ?? null,
-    }));
+  function mapRadiator(json: any, host: string): RadiatorRow {
+    const entry = Array.isArray(json?.data) ? json.data[0] : null;
+    return {
+      name: host.toUpperCase(),
+      id: entry?.id ?? '',
+      host,
+      onoff: entry?.onoff ?? null,
+      mode: entry?.mode ?? null,
+      current: entry?.temperature?.current ?? null,
+      target: entry?.temperature?.target ?? null,
+      heating: entry?.temperature?.heating ?? null,
+      openWindow: entry?.temperature?.openWindow ?? null,
+    };
   }
 
   function mapBthome(json: any): BthomeRow[] {
@@ -283,10 +284,14 @@ export function useDeviceCards() {
     loading.value = true;
     errorMessage.value = '';
     try {
-      const [radiatorJson, bthomeJson, thermostatJson, merossJsons] = await Promise.all([
-        fetchJson('/radiator?hosts=kitchen,livingroom,office,bedroom&code=status'),
+      const [bthomeJson, thermostatJson, radiatorJsons, merossJsons] = await Promise.all([
         fetchJson('/bthome?hosts=office,bedroom,livingroom,kitchen&code=status'),
         fetchJson('/thermostat?code=status'),
+        Promise.all(
+          RADIATOR_HOSTS.map((host) =>
+            fetchJson(`/radiator/${host}?code=status`).catch((error) => ({ error, host })),
+          ),
+        ),
         Promise.all(
           MEROSS_DEVICES.map((device) =>
             fetchJson(`/meross/${device}?code=status`).catch((error) => ({ error, device })),
@@ -294,13 +299,20 @@ export function useDeviceCards() {
         ),
       ]);
 
-      const radiatorStatus = mapRadiator(radiatorJson);
       const bthomeStatus = mapBthome(bthomeJson);
       const thermostatStatus = mapThermostat(thermostatJson);
 
       const bthomeTemperatureByName = new Map<string, number | null>();
       bthomeStatus.forEach((row) => {
         bthomeTemperatureByName.set(row.name, row.temperature ?? null);
+      });
+
+      const radiatorStatus = RADIATOR_HOSTS.map((host, index) => {
+        const payload = radiatorJsons[index];
+        if (payload?.error) {
+          throw payload.error;
+        }
+        return mapRadiator(payload, host);
       });
 
       const merossStatuses = MEROSS_DEVICES.map((device, index) => {
@@ -351,15 +363,14 @@ export function useDeviceCards() {
   }
 
   async function togglePower(control: PowerControl) {
-    const nextState = control.state === 1 ? 0 : 1;
     let path = '';
 
     if (control.target.type === 'thermostat') {
-      path = `/thermostat?code=power&onoff=${nextState}`;
+      path = '/thermostat?code=toggle';
     } else if (control.target.type === 'radiator') {
-      path = `/radiator?hosts=${encodeURIComponent(control.target.host)}&code=power&onoff=${nextState}`;
+      path = `/radiator/${encodeURIComponent(control.target.host)}?code=toggle`;
     } else {
-      path = `/meross/${control.target.device}?code=power&onoff=${nextState}`;
+      path = `/meross/${control.target.device}?code=toggle`;
     }
 
     setPowerLoading(control.key, true);
