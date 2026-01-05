@@ -15,9 +15,9 @@
           <button
             type="button"
             role="tab"
-            :aria-selected="mode === 'thermostat'"
-            :class="['mode-btn', { active: mode === 'thermostat' }]"
-            @click="mode = 'thermostat'"
+            :aria-selected="mode === 'devices'"
+            :class="['mode-btn', { active: mode === 'devices' }]"
+            @click="mode = 'devices'"
           >
             devices
           </button>
@@ -26,7 +26,7 @@
 
       <main class="main">
         <StatefulView v-if="mode === 'stateful'" :auth-active="showAuthPrompt" />
-        <ThermostatPanel v-else />
+        <DevicesPanel v-else />
       </main>
     </div>
 
@@ -44,14 +44,15 @@
 import { onMounted, ref, watch } from 'vue';
 import AuthModal from './components/AuthModal.vue';
 import StatefulView from './components/StatefulView.vue';
-import ThermostatPanel from './components/ThermostatPanel.vue';
+import DevicesPanel from './components/DevicesPanel.vue';
 import { useAuth } from './composables/useAuth';
 
-const DEFAULT_MODE: 'stateful' | 'thermostat' = 'stateful';
-const MODE_CACHE_KEY = 'stateful_web_mode_v1';
+const DEFAULT_MODE: 'stateful' | 'devices' = 'stateful';
+const MODE_CACHE_KEY = 'stateful_web_mode_v2';
+const LEGACY_MODE_KEY = 'stateful_web_mode_v1';
 const DEFAULT_TERMINAL_HEIGHT = '220px';
 
-const mode = ref<'stateful' | 'thermostat'>(DEFAULT_MODE);
+const mode = ref<'stateful' | 'devices'>(DEFAULT_MODE);
 const terminalHeightBeforeAuth = ref(DEFAULT_TERMINAL_HEIGHT);
 
 const { username, password, showAuthPrompt, setCredentials, closeAuthPrompt } =
@@ -59,9 +60,11 @@ const { username, password, showAuthPrompt, setCredentials, closeAuthPrompt } =
 
 onMounted(() => {
   try {
-    const cachedMode = window.localStorage.getItem(MODE_CACHE_KEY);
-    if (cachedMode === 'stateful' || cachedMode === 'thermostat') {
-      mode.value = cachedMode;
+    const cachedMode =
+      window.localStorage.getItem(MODE_CACHE_KEY) ||
+      window.localStorage.getItem(LEGACY_MODE_KEY);
+    if (cachedMode === 'stateful' || cachedMode === 'thermostat' || cachedMode === 'devices') {
+      mode.value = cachedMode === 'thermostat' ? 'devices' : cachedMode;
     }
   } catch {
     mode.value = DEFAULT_MODE;
