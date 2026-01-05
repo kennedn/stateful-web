@@ -6,6 +6,7 @@ const AUTH_CACHE_KEY = 'stateful_web_auth_v1';
 const cachedUsername = ref('');
 const cachedPassword = ref('');
 const showAuthPrompt = ref(false);
+const authVersion = ref(0);
 let cacheLoaded = false;
 
 function loadCachedCredentials() {
@@ -62,6 +63,7 @@ function setCredentials(username: string, password: string) {
   cachedPassword.value = password;
   saveCachedCredentials();
   showAuthPrompt.value = false;
+  authVersion.value += 1;
 }
 
 function requireAuthPrompt() {
@@ -102,6 +104,7 @@ export function useAuth() {
     password: cachedPassword,
     authHeader,
     showAuthPrompt,
+    authVersion,
     setCredentials,
     requestWithAuth,
     requireAuthPrompt,

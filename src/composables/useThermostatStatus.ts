@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useAuth } from './useAuth';
 
 type RadiatorRow = {
@@ -38,7 +38,7 @@ export function useThermostatStatus() {
   const bthomeStatus = ref<BthomeRow[]>([]);
   const thermostatStatus = ref<ThermostatRow | null>(null);
 
-  const { requestWithAuth } = useAuth();
+  const { requestWithAuth, authVersion } = useAuth();
 
   async function fetchJson(path: string) {
     const { response, json, text } = await requestWithAuth(path, {
@@ -113,6 +113,10 @@ export function useThermostatStatus() {
       loading.value = false;
     }
   }
+
+  watch(authVersion, () => {
+    refresh();
+  });
 
   return {
     loading,

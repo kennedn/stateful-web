@@ -1,5 +1,5 @@
 // src/composables/useApiExplorer.ts
-import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import { useAuth } from './useAuth';
 
 const CACHE_KEY = 'stateful_api_cache_v1';
@@ -13,7 +13,7 @@ export function useApiExplorer() {
   const statusLabel = ref('');
   const responseText = ref('');
 
-  const { requestWithAuth, API_BASE_URL } = useAuth();
+  const { requestWithAuth, API_BASE_URL, authVersion } = useAuth();
 
   const pathCache = ref<Record<string, string[]>>({});
   const childInfo = ref<
@@ -233,6 +233,10 @@ export function useApiExplorer() {
     const segments = (event.state?.pathSegments as string[]) || [];
     navigateTo(segments, null, false);
   }
+
+  watch(authVersion, () => {
+    navigateTo([...currentPathSegments.value], null, false);
+  });
 
   function setRowBackgroundFromEvent(e: Event) {
     const row = e.currentTarget as HTMLElement | null;
