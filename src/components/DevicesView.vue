@@ -1,6 +1,6 @@
 <template>
-  <div class="thermostat-view">
-    <div class="thermostat-heading">
+  <div class="devices-view">
+    <div class="devices-heading">
       <div>
         <h2>Home devices overview</h2>
         <p class="helper-text">
@@ -37,7 +37,7 @@
     <div v-if="errorMessage" class="callout error">{{ errorMessage }}</div>
     <div v-else-if="loading" class="callout">Loading device data…</div>
 
-    <div v-else class="thermostat-grid" aria-label="Device cards">
+    <div v-else class="devices-grid" aria-label="Device cards">
       <div v-if="cards.length" class="device-grid">
         <article
           v-for="card in cards"
