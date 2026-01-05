@@ -35,7 +35,11 @@ function toggleType(type: DeviceType) {
 }
 
 function selectAll() {
-  selectedTypes.value = [...DEVICE_TYPES];
+  if (selectedTypes.value.length === DEVICE_TYPES.length) {
+    selectedTypes.value = [];
+  } else {
+    selectedTypes.value = [...DEVICE_TYPES];
+  }
 }
 
 onMounted(() => {

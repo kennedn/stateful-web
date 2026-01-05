@@ -59,7 +59,7 @@
             </div>
 
             <div class="stat-grid">
-              <div v-if="card.status" class="stat">
+              <div v-if="card.status" class="stat" :class="{ 'is-interactive': card.kind === 'bulb' }">
                 <p class="label">{{ card.kind === 'bulb' ? 'Power' : 'Status' }}</p>
                 <p class="value">
                   <button
@@ -84,6 +84,7 @@
                 v-for="(element, index) in card.elements"
                 :key="`${card.id}-el-${index}`"
                 class="stat"
+                :class="{ 'is-interactive': element.isPower }"
               >
                 <p class="label">{{ element.label }}</p>
                 <p class="value">
