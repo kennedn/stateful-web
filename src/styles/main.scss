@@ -65,11 +65,18 @@ pre {
 // LAYOUT
 //
 .app {
-  min-height: 100vh;
+  // Use dynamic viewport units when available to keep the terminal pinned
+  // to the visual viewport on mobile browsers (avoids needing to scroll
+  // to the fixed terminal).
+  min-height: 100dvh;
   padding: 1rem 1rem calc(var(--terminal-height) + 1rem);
 
   @media (max-width: 600px) {
     padding: 0.75rem 0.5rem calc(var(--terminal-height) + 0.5rem);
+  }
+
+  @supports not (min-height: 100dvh) {
+    min-height: 100vh;
   }
 }
 
@@ -626,7 +633,7 @@ pre {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: env(safe-area-inset-bottom, 0);
   height: var(--terminal-height);
   min-height: 15vh;
   max-height: 80vh;
