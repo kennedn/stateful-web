@@ -250,6 +250,59 @@ pre {
     gap: 0.85rem;
   }
 
+  .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.5rem 0 0.2rem;
+  }
+
+  .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.07);
+    color: white;
+    cursor: pointer;
+    font-weight: 650;
+    letter-spacing: 0.01em;
+    transition: transform 0.1s, box-shadow 0.2s, border-color 0.2s;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+    }
+
+    &[aria-pressed='true'] {
+      background: white;
+      color: #0f433f;
+      border-color: white;
+    }
+  }
+
+  .chip-dot {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.5);
+
+    &.radiator {
+      background: #ff7b9c;
+    }
+
+    &.thermostat {
+      background: #71d8ff;
+    }
+
+    &.bulb {
+      background: #ffdd7b;
+    }
+  }
+
   .device-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
