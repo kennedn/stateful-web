@@ -1,9 +1,8 @@
 // src/composables/useApiExplorer.ts
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue';
+import { useAuth } from './useAuth';
 
-const BASE_URL = 'https://api.kennedn.com/v2';
 const CACHE_KEY = 'stateful_api_cache_v1';
-const showAuthPanel = ref(false);
 
 export function useApiExplorer() {
   const currentPathSegments = ref<string[]>([]);
@@ -14,9 +13,7 @@ export function useApiExplorer() {
   const statusLabel = ref('');
   const responseText = ref('');
 
-  const authUsername = ref('');
-  const authPassword = ref('');
-  const authHeader = ref<string | null>(null);
+  const { requestWithAuth, API_BASE_URL } = useAuth();
 
   const pathCache = ref<Record<string, string[]>>({});
   const childInfo = ref<
@@ -104,68 +101,26 @@ export function useApiExplorer() {
       .map(decodeURIComponent);
   }
 
-  function buildAuthHeader() {
-    const u = (authUsername.value || '').trim();
-    const p = authPassword.value || '';
-    if (!u && !p) {
-      authHeader.value = null;
-      return;
-    }
-    try {
-      const token = btoa(`${u}:${p}`);
-      authHeader.value = `Basic ${token}`;
-    } catch {
-      authHeader.value = null;
-    }
-  }
-
   async function fetchRaw(path: string, options: RequestInit = {}) {
-    const url = BASE_URL + path;
     const method = (options.method || 'GET').toUpperCase();
-    const headers = new Headers(options.headers || {});
-  
-    if (authHeader.value) {
-      headers.set('Authorization', authHeader.value);
-    }
-  
-    const fetchOptions: RequestInit = { ...options, headers };
-  
     try {
-      const res = await fetch(url, fetchOptions);
-      const text = await res.text();
-      let json: any = null;
-      try {
-        json = text ? JSON.parse(text) : null;
-      } catch {
-        // ignore non-JSON bodies
-      }
-  
-      // If we get a 401 on ANY request (navigation or background prefetch),
-      // show it in the terminal and surface the auth panel.
-      if (res.status === 401) {
-        showAuthPanel.value = true;
+      const { response, json, text, url } = await requestWithAuth(path, options);
 
-        setTerminalHeight(window.innerHeight * 0.5)
-  
-        // Log the 401 to the terminal output
+      // If we get a 401 on ANY request (navigation or background prefetch),
+      // expand the terminal and show the unauthorized response for context.
+      if (response.status === 401) {
+        setTerminalHeight(window.innerHeight * 0.5);
+
         setGlobalResult(
           `${method} ${url}`,
-          `${res.status} ${text || '(no body)'}`,
+          `${response.status} ${text || '(no body)'}`,
         );
       }
-  
-      // You can optionally log other non-2xx statuses as well:
-      // if (!res.ok && res.status !== 401) {
-      //   setGlobalResult(
-      //     `${method} ${url}`,
-      //     `${res.status} ${text || '(no body)'}`,
-      //   );
-      // }
-  
-      return { ok: res.ok, status: res.status, json, text };
+
+      return { ok: response.ok, status: response.status, json, text };
     } catch (e: any) {
       // Network / fetch-level error: also show in terminal
-      setGlobalResult(`${method} ${url}`, String(e));
+      setGlobalResult(`${method} ${API_BASE_URL}${path}`, String(e));
       return { ok: false, status: 0, json: null, text: String(e) };
     }
   }
@@ -176,7 +131,7 @@ export function useApiExplorer() {
   
       if (logToTerminal) {
         // Show cached GET in terminal as well
-        setGlobalResult(`GET ${BASE_URL}${path}`, { data: cached });
+        setGlobalResult(`GET ${API_BASE_URL}${path}`, { data: cached });
       }
   
       return cached;
@@ -197,7 +152,7 @@ export function useApiExplorer() {
   
     if (logToTerminal) {
       // Log the successful GET to the terminal
-      setGlobalResult(`GET ${BASE_URL}${path}`, json);
+      setGlobalResult(`GET ${API_BASE_URL}${path}`, json);
     }
   
     return json.data as string[];
@@ -258,7 +213,7 @@ export function useApiExplorer() {
     const { ok, status, json, text } = await fetchRaw(query, {
       method: 'POST',
     });
-    const label = `POST ${BASE_URL}${query}`;
+    const label = `POST ${API_BASE_URL}${query}`;
 
     if (!ok || status !== 200) {
       setGlobalResult(label, `${status} ${text || ''}`);
@@ -316,14 +271,8 @@ export function useApiExplorer() {
         e.message
       }`;
     } finally {
-        loading.value = false;
+      loading.value = false;
     }
-  }
-
-  function handleAuthSubmit() {
-    buildAuthHeader();
-    showAuthPanel.value = false;
-    navigateTo(currentPathSegments.value, null, false);
   }
 
   function onPopState(event: PopStateEvent) {
@@ -424,19 +373,15 @@ export function useApiExplorer() {
     errorMessage,
     statusLabel,
     responseText,
-    authUsername,
-    authPassword,
     rangeInfo,
     rangeCode,
     rangeWithValue,
     rangeValue,
     childInfo,
-    showAuthPanel,
 
     // API
     navigateTo,
     postCode,
-    handleAuthSubmit,
     setRowBackgroundFromEvent,
 
     // terminal drag handlers

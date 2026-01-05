@@ -25,112 +25,34 @@
       </div>
 
       <main class="main">
-        <template v-if="mode === 'stateful'">
-          <PathBreadcrumb
-            class="path"
-            :segments="currentPathSegments"
-            @navigateRoot="navigateTo([], null, true)"
-            @navigateTo="(segPath) => navigateTo(segPath, null, true)"
-          />
-          <ItemsView
-            :items="items"
-            :loading="loading"
-            :error-message="errorMessage"
-            :range-info="rangeInfo"
-            :range-code="rangeCode"
-            :range-with-value="rangeWithValue"
-            :range-value="rangeValue"
-            :child-info="childInfo"
-            :current-path="currentPathSegments"
-            @update:rangeCode="rangeCode = $event"
-            @update:rangeWithValue="rangeWithValue = $event"
-            @update:rangeValue="rangeValue = $event"
-            @post="postCode"
-            @navigate="navigateTo"
-            @setRowBackground="setRowBackgroundFromEvent"
-          />
-        </template>
-
-        <ThermostatView
-          v-else
-          :loading="thermostatLoading"
-          :error-message="thermostatError"
-          :radiator-status="radiatorStatus"
-          :bthome-status="bthomeStatus"
-          :thermostat-status="thermostatStatus"
-          @refresh="refreshThermostat"
-        />
+        <StatefulView v-if="mode === 'stateful'" />
+        <ThermostatPanel v-else />
       </main>
     </div>
 
-    <ExplorerPanel
-      v-if="mode === 'stateful'"
-      :status="statusLabel"
-      :response="responseText"
-      :showAuth="showAuthPanel"
-      :username="authUsername"
-      :password="authPassword"
-      @drag-mouse-down="handleHandleMouseDown"
-      @drag-touch-start="handleHandleTouchStart"
-      @update:username="authUsername = $event"
-      @update:password="authPassword = $event"
-      @submit-auth="handleAuthSubmit"
+    <AuthModal
+      :open="showAuthPrompt"
+      :username="username"
+      :password="password"
+      @close="closeAuthPrompt"
+      @submit="handleAuthSubmit"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { watch, ref } from 'vue';
-import { useApiExplorer } from './composables/useApiExplorer';
-import { useThermostatStatus } from './composables/useThermostatStatus';
-import PathBreadcrumb from './components/PathBreadcrumb.vue';
-import ItemsView from './components/ItemsView.vue';
-import ExplorerPanel from './components/ExplorerPanel.vue';
-import ThermostatView from './components/ThermostatView.vue';
+import { ref } from 'vue';
+import AuthModal from './components/AuthModal.vue';
+import StatefulView from './components/StatefulView.vue';
+import ThermostatPanel from './components/ThermostatPanel.vue';
+import { useAuth } from './composables/useAuth';
 
 const mode = ref<'stateful' | 'thermostat'>('stateful');
 
-const {
-  currentPathSegments,
-  items,
-  loading,
-  errorMessage,
-  statusLabel,
-  responseText,
-  authUsername,
-  authPassword,
-  rangeInfo,
-  rangeCode,
-  rangeWithValue,
-  rangeValue,
-  childInfo,
-  showAuthPanel,
-  navigateTo,
-  postCode,
-  handleAuthSubmit,
-  setRowBackgroundFromEvent,
-  handleHandleMouseDown,
-  handleHandleTouchStart,
-} = useApiExplorer();
+const { username, password, showAuthPrompt, setCredentials, closeAuthPrompt } =
+  useAuth();
 
-const {
-  loading: thermostatLoading,
-  errorMessage: thermostatError,
-  radiatorStatus,
-  bthomeStatus,
-  thermostatStatus,
-  refresh,
-} = useThermostatStatus();
-
-const refreshThermostat = () => refresh();
-
-watch(
-  mode,
-  (value) => {
-    if (value === 'thermostat') {
-      refresh();
-    }
-  },
-  { immediate: false },
-);
+function handleAuthSubmit(payload: { username: string; password: string }) {
+  setCredentials(payload.username, payload.password);
+}
 </script>

@@ -1,4 +1,5 @@
 import { ref } from 'vue';
+import { useAuth } from './useAuth';
 
 type RadiatorRow = {
   name: string;
@@ -30,8 +31,6 @@ type ThermostatRow = {
   openWindow: boolean | null;
 };
 
-const BASE_URL = 'https://api.kennedn.com/v2';
-
 export function useThermostatStatus() {
   const loading = ref(false);
   const errorMessage = ref('');
@@ -39,20 +38,18 @@ export function useThermostatStatus() {
   const bthomeStatus = ref<BthomeRow[]>([]);
   const thermostatStatus = ref<ThermostatRow | null>(null);
 
+  const { requestWithAuth } = useAuth();
+
   async function fetchJson(path: string) {
-    const url = `${BASE_URL}${path}`;
-    const res = await fetch(url, { method: 'POST' });
-    let json: any = null;
+    const { response, json, text } = await requestWithAuth(path, {
+      method: 'POST',
+    });
 
-    try {
-      json = await res.json();
-    } catch {
-      // ignore
-    }
-
-    if (!res.ok) {
-      const body = json ? JSON.stringify(json) : await res.text();
-      throw new Error(`${res.status} on ${path}: ${body || 'unknown error'}`);
+    if (!response.ok) {
+      const body = json ? JSON.stringify(json) : text;
+      throw new Error(
+        `${response.status} on ${path}: ${body || 'unknown error'}`,
+      );
     }
 
     return json;
