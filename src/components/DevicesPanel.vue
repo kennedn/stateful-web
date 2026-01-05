@@ -1,5 +1,5 @@
 <template>
-  <ThermostatView
+  <DevicesView
     :loading="loading"
     :error-message="errorMessage"
     :cards="filteredCards"
@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import ThermostatView from './ThermostatView.vue';
+import DevicesView from './DevicesView.vue';
 import { DEVICE_TYPES, useDeviceCards } from '../composables/useDeviceCards';
 import type { DeviceType } from '../composables/useDeviceCards';
 
