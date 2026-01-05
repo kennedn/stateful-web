@@ -6,6 +6,7 @@
     :available-types="deviceTypes"
     :selected-types="selectedTypes"
     @refresh="refresh"
+    @toggle-power="togglePower"
     @toggle-type="toggleType"
     @select-all="selectAll"
   />
@@ -17,7 +18,7 @@ import ThermostatView from './ThermostatView.vue';
 import { DEVICE_TYPES, useDeviceCards } from '../composables/useDeviceCards';
 import type { DeviceType } from '../composables/useDeviceCards';
 
-const { loading, errorMessage, cards, refresh } = useDeviceCards();
+const { loading, errorMessage, cards, refresh, togglePower } = useDeviceCards();
 const deviceTypes = DEVICE_TYPES;
 const selectedTypes = ref<DeviceType[]>([...DEVICE_TYPES]);
 

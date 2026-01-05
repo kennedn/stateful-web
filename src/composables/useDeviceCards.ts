@@ -3,6 +3,7 @@ import { useAuth } from './useAuth';
 
 type RadiatorRow = {
   name: string;
+  slug: string;
   id: string;
   onoff: number | null;
   mode: number | null;
@@ -23,6 +24,7 @@ type BthomeRow = {
 
 type ThermostatRow = {
   name: string;
+  slug: string;
   onoff: number | null;
   mode: number | null;
   current: number | null;
@@ -33,6 +35,7 @@ type ThermostatRow = {
 
 type MerossRow = {
   name: string;
+  slug: string;
   onoff: number | null;
   rgb: number | null;
   temperature: number | null;
@@ -48,6 +51,7 @@ export type CardElement = {
   label: string;
   value: string;
   tone?: StatusTone;
+  isPower?: boolean;
 };
 
 export type DeviceCard = {
@@ -60,6 +64,8 @@ export type DeviceCard = {
   status?: { label: string; tone: StatusTone };
   elements: CardElement[];
   isActive: boolean;
+  slug: string;
+  togglePath?: string;
 };
 
 export const DEVICE_TYPES: DeviceType[] = ['bulb', 'thermostat', 'radiator'];
@@ -90,6 +96,7 @@ export function useDeviceCards() {
     const data = Array.isArray(json?.data) ? json.data : [];
     return data.map((entry: any) => ({
       name: String(entry?.name || '').toUpperCase(),
+      slug: String(entry?.name || '').toLowerCase(),
       id: entry?.status?.id ?? '',
       onoff: entry?.status?.onoff ?? null,
       mode: entry?.status?.mode ?? null,
@@ -116,6 +123,7 @@ export function useDeviceCards() {
     if (!json?.data) return null;
     return {
       name: 'THERMOSTAT',
+      slug: 'thermostat',
       onoff: json.data.onoff ?? null,
       mode: json.data.mode ?? null,
       current: json.data?.temperature?.current ?? null,
@@ -127,8 +135,10 @@ export function useDeviceCards() {
 
   function mapMeross(json: any, name: string): MerossRow {
     const data = json?.data || {};
+    const slug = String(name || '').toLowerCase();
     return {
       name: String(name || '').toUpperCase(),
+      slug,
       onoff: data.onoff ?? null,
       rgb: data.rgb ?? null,
       temperature: data.temperature ?? null,
@@ -205,9 +215,12 @@ export function useDeviceCards() {
           label: 'Power',
           value: formatBoolean(status.onoff),
           tone: formatTone(status.onoff),
+          isPower: true,
         },
       ],
       isActive: heatingTone === 'on',
+      slug: status.slug,
+      togglePath: '/thermostat?code=toggle',
     };
   }
 
@@ -232,9 +245,12 @@ export function useDeviceCards() {
           label: 'Power',
           value: formatBoolean(radiator.onoff),
           tone: formatTone(radiator.onoff),
+          isPower: true,
         },
       ],
       isActive: heatingTone === 'on',
+      slug: radiator.slug,
+      togglePath: `/radiator/${radiator.slug}?code=toggle`,
     };
   }
 
@@ -254,6 +270,8 @@ export function useDeviceCards() {
         { label: 'RGB', value: formatRgb(meross.rgb) },
       ],
       isActive: powerTone === 'on',
+      slug: meross.slug,
+      togglePath: `/meross/${meross.slug}?code=toggle`,
     };
   }
 
@@ -318,6 +336,20 @@ export function useDeviceCards() {
     }
   }
 
+  async function togglePower(cardId: string) {
+    const card = cards.value.find((entry) => entry.id === cardId);
+    if (!card?.togglePath) return;
+
+    try {
+      await fetchJson(card.togglePath);
+    } catch (e: any) {
+      errorMessage.value = e?.message || 'Unable to toggle device power';
+      return;
+    }
+
+    await refresh();
+  }
+
   watch(authVersion, () => {
     refresh();
   });
@@ -327,6 +359,7 @@ export function useDeviceCards() {
     errorMessage,
     cards,
     refresh,
+    togglePower,
   };
 }
 

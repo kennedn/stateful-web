@@ -97,22 +97,46 @@
 
             <div class="stat-grid">
               <div v-if="card.status" class="stat">
-                <p class="label">Status</p>
+                <p class="label">{{ card.kind === 'bulb' ? 'Power' : 'Status' }}</p>
                 <p class="value">
-                  <span class="heating-pill" :class="card.status.tone">
+                  <button
+                    v-if="card.kind === 'bulb'"
+                    class="power-toggle"
+                    type="button"
+                    :disabled="loading"
+                    @click="emit('toggle-power', card.id)"
+                  >
+                    <span class="heating-pill" :class="card.status.tone">
+                      <span class="pulse" aria-hidden="true"></span>
+                      {{ card.status.label }}
+                    </span>
+                  </button>
+                  <span v-else class="heating-pill" :class="card.status.tone">
                     <span class="pulse" aria-hidden="true"></span>
                     {{ card.status.label }}
                   </span>
                 </p>
               </div>
-              <div v-for="(element, index) in card.elements" :key="`${card.id}-el-${index}`" class="stat">
+              <div
+                v-for="(element, index) in card.elements"
+                :key="`${card.id}-el-${index}`"
+                class="stat"
+              >
                 <p class="label">{{ element.label }}</p>
                 <p class="value">
-                  <span
-                    v-if="element.tone"
-                    class="heating-pill"
-                    :class="element.tone"
+                  <button
+                    v-if="element.isPower"
+                    class="power-toggle"
+                    type="button"
+                    :disabled="loading"
+                    @click="emit('toggle-power', card.id)"
                   >
+                    <span class="heating-pill" :class="element.tone">
+                      <span class="pulse" aria-hidden="true"></span>
+                      {{ element.value }}
+                    </span>
+                  </button>
+                  <span v-else-if="element.tone" class="heating-pill" :class="element.tone">
                     <span class="pulse" aria-hidden="true"></span>
                     {{ element.value }}
                   </span>
@@ -145,6 +169,7 @@ const emit = defineEmits<{
   (e: 'refresh'): void;
   (e: 'toggle-type', type: DeviceType): void;
   (e: 'select-all'): void;
+  (e: 'toggle-power', id: string): void;
 }>();
 
 const { loading, errorMessage, cards, availableTypes, selectedTypes } = toRefs(props);
