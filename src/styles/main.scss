@@ -236,6 +236,7 @@ pre {
     padding: 0.8rem 1rem;
     background: rgba(255, 255, 255, 0.08);
     color: white;
+    overflow: hidden;
 
     &.error {
       background: rgba(255, 128, 128, 0.15);
@@ -737,7 +738,7 @@ pre {
 }
 
 .auth-modal {
-  width: min(480px, 100%);
+  width: 300px;
   background: var(--card-bg);
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35);

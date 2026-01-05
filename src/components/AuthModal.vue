@@ -38,7 +38,7 @@
         </label>
         <div class="auth-modal__actions">
           <button type="button" class="ghost" @click="emit('close')">Cancel</button>
-          <button type="submit">Save &amp; continue</button>
+          <button type="submit">Login</button>
         </div>
       </form>
     </div>
