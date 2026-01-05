@@ -25,112 +25,80 @@
       </div>
 
       <main class="main">
-        <template v-if="mode === 'stateful'">
-          <PathBreadcrumb
-            class="path"
-            :segments="currentPathSegments"
-            @navigateRoot="navigateTo([], null, true)"
-            @navigateTo="(segPath) => navigateTo(segPath, null, true)"
-          />
-          <ItemsView
-            :items="items"
-            :loading="loading"
-            :error-message="errorMessage"
-            :range-info="rangeInfo"
-            :range-code="rangeCode"
-            :range-with-value="rangeWithValue"
-            :range-value="rangeValue"
-            :child-info="childInfo"
-            :current-path="currentPathSegments"
-            @update:rangeCode="rangeCode = $event"
-            @update:rangeWithValue="rangeWithValue = $event"
-            @update:rangeValue="rangeValue = $event"
-            @post="postCode"
-            @navigate="navigateTo"
-            @setRowBackground="setRowBackgroundFromEvent"
-          />
-        </template>
-
-        <ThermostatView
-          v-else
-          :loading="thermostatLoading"
-          :error-message="thermostatError"
-          :radiator-status="radiatorStatus"
-          :bthome-status="bthomeStatus"
-          :thermostat-status="thermostatStatus"
-          @refresh="refreshThermostat"
-        />
+        <StatefulView v-if="mode === 'stateful'" :auth-active="showAuthPrompt" />
+        <ThermostatPanel v-else />
       </main>
     </div>
 
-    <ExplorerPanel
-      v-if="mode === 'stateful'"
-      :status="statusLabel"
-      :response="responseText"
-      :showAuth="showAuthPanel"
-      :username="authUsername"
-      :password="authPassword"
-      @drag-mouse-down="handleHandleMouseDown"
-      @drag-touch-start="handleHandleTouchStart"
-      @update:username="authUsername = $event"
-      @update:password="authPassword = $event"
-      @submit-auth="handleAuthSubmit"
+    <AuthModal
+      :open="showAuthPrompt"
+      :username="username"
+      :password="password"
+      @close="closeAuthPrompt"
+      @submit="handleAuthSubmit"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { watch, ref } from 'vue';
-import { useApiExplorer } from './composables/useApiExplorer';
-import { useThermostatStatus } from './composables/useThermostatStatus';
-import PathBreadcrumb from './components/PathBreadcrumb.vue';
-import ItemsView from './components/ItemsView.vue';
-import ExplorerPanel from './components/ExplorerPanel.vue';
-import ThermostatView from './components/ThermostatView.vue';
+import { onMounted, ref, watch } from 'vue';
+import AuthModal from './components/AuthModal.vue';
+import StatefulView from './components/StatefulView.vue';
+import ThermostatPanel from './components/ThermostatPanel.vue';
+import { useAuth } from './composables/useAuth';
 
-const mode = ref<'stateful' | 'thermostat'>('stateful');
+const DEFAULT_MODE: 'stateful' | 'thermostat' = 'stateful';
+const MODE_CACHE_KEY = 'stateful_web_mode_v1';
+const DEFAULT_TERMINAL_HEIGHT = '220px';
 
-const {
-  currentPathSegments,
-  items,
-  loading,
-  errorMessage,
-  statusLabel,
-  responseText,
-  authUsername,
-  authPassword,
-  rangeInfo,
-  rangeCode,
-  rangeWithValue,
-  rangeValue,
-  childInfo,
-  showAuthPanel,
-  navigateTo,
-  postCode,
-  handleAuthSubmit,
-  setRowBackgroundFromEvent,
-  handleHandleMouseDown,
-  handleHandleTouchStart,
-} = useApiExplorer();
+const mode = ref<'stateful' | 'thermostat'>(DEFAULT_MODE);
+const terminalHeightBeforeAuth = ref(DEFAULT_TERMINAL_HEIGHT);
 
-const {
-  loading: thermostatLoading,
-  errorMessage: thermostatError,
-  radiatorStatus,
-  bthomeStatus,
-  thermostatStatus,
-  refresh,
-} = useThermostatStatus();
+const { username, password, showAuthPrompt, setCredentials, closeAuthPrompt } =
+  useAuth();
 
-const refreshThermostat = () => refresh();
-
-watch(
-  mode,
-  (value) => {
-    if (value === 'thermostat') {
-      refresh();
+onMounted(() => {
+  try {
+    const cachedMode = window.localStorage.getItem(MODE_CACHE_KEY);
+    if (cachedMode === 'stateful' || cachedMode === 'thermostat') {
+      mode.value = cachedMode;
     }
-  },
-  { immediate: false },
-);
+  } catch {
+    mode.value = DEFAULT_MODE;
+  }
+
+  document.documentElement.style.setProperty(
+    '--terminal-height',
+    DEFAULT_TERMINAL_HEIGHT,
+  );
+});
+
+watch(mode, (value) => {
+  try {
+    window.localStorage.setItem(MODE_CACHE_KEY, value);
+  } catch {
+    // ignore storage errors
+  }
+});
+
+watch(showAuthPrompt, (open) => {
+  const root = document.documentElement;
+  const currentHeight =
+    getComputedStyle(root).getPropertyValue('--terminal-height').trim() ||
+    DEFAULT_TERMINAL_HEIGHT;
+
+  if (open) {
+    terminalHeightBeforeAuth.value = currentHeight;
+    root.style.setProperty('--terminal-height', '0px');
+  } else {
+    root.style.setProperty(
+      '--terminal-height',
+      terminalHeightBeforeAuth.value || DEFAULT_TERMINAL_HEIGHT,
+    );
+  }
+});
+
+function handleAuthSubmit(payload: { username: string; password: string }) {
+  setCredentials(payload.username, payload.password);
+}
 </script>
