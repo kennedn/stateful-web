@@ -66,6 +66,7 @@ export type DeviceCard = {
   isActive: boolean;
   slug: string;
   togglePath?: string;
+  statusPath?: string;
 };
 
 export const DEVICE_TYPES: DeviceType[] = ['bulb', 'thermostat', 'radiator'];
@@ -76,6 +77,7 @@ export function useDeviceCards() {
   const loading = ref(false);
   const errorMessage = ref('');
   const cards = ref<DeviceCard[]>([]);
+  const bthomeTemperatures = ref<Map<string, number | null>>(new Map());
 
   const { requestWithAuth, authVersion } = useAuth();
 
@@ -97,13 +99,15 @@ export function useDeviceCards() {
     return data.map((entry: any) => ({
       name: String(entry?.name || '').toUpperCase(),
       slug: String(entry?.name || '').toLowerCase(),
-      id: entry?.status?.id ?? '',
-      onoff: entry?.status?.onoff ?? null,
-      mode: entry?.status?.mode ?? null,
-      current: entry?.status?.temperature?.current ?? null,
-      target: entry?.status?.temperature?.target ?? null,
-      heating: entry?.status?.temperature?.heating ?? null,
-      openWindow: entry?.status?.temperature?.openWindow ?? null,
+      id: entry?.status?.id ?? entry?.id ?? '',
+      onoff: entry?.status?.onoff ?? entry?.onoff ?? null,
+      mode: entry?.status?.mode ?? entry?.mode ?? null,
+      current: entry?.status?.temperature?.current ?? entry?.temperature?.current ?? null,
+      target: entry?.status?.temperature?.target ?? entry?.temperature?.target ?? null,
+      heating:
+        entry?.status?.temperature?.heating ?? entry?.temperature?.heating ?? null,
+      openWindow:
+        entry?.status?.temperature?.openWindow ?? entry?.temperature?.openWindow ?? null,
     }));
   }
 
@@ -221,6 +225,7 @@ export function useDeviceCards() {
       isActive: heatingTone === 'on',
       slug: status.slug,
       togglePath: '/thermostat?code=toggle',
+      statusPath: '/thermostat?code=status',
     };
   }
 
@@ -251,6 +256,7 @@ export function useDeviceCards() {
       isActive: heatingTone === 'on',
       slug: radiator.slug,
       togglePath: `/radiator/${radiator.slug}?code=toggle`,
+      statusPath: `/radiator/${radiator.slug}?code=status`,
     };
   }
 
@@ -272,6 +278,7 @@ export function useDeviceCards() {
       isActive: powerTone === 'on',
       slug: meross.slug,
       togglePath: `/meross/${meross.slug}?code=toggle`,
+      statusPath: `/meross/${meross.slug}?code=status`,
     };
   }
 
@@ -298,6 +305,7 @@ export function useDeviceCards() {
       bthomeStatus.forEach((row) => {
         bthomeTemperatureByName.set(row.name, row.temperature ?? null);
       });
+      bthomeTemperatures.value = bthomeTemperatureByName;
 
       const merossStatuses = MEROSS_DEVICES.map((device, index) => {
         const payload = merossJsons[index];
@@ -336,6 +344,44 @@ export function useDeviceCards() {
     }
   }
 
+  async function refreshCard(card: DeviceCard) {
+    if (!card.statusPath) return;
+
+    try {
+      const statusJson = await fetchJson(card.statusPath);
+      let updatedCard: DeviceCard | null = null;
+
+      if (card.kind === 'thermostat') {
+        const thermostatStatus = mapThermostat(statusJson);
+        if (thermostatStatus) {
+          updatedCard = buildThermostatCard(
+            thermostatStatus,
+            bthomeTemperatures.value.get(thermostatStatus.name) ?? null,
+          );
+        }
+      } else if (card.kind === 'radiator') {
+        const radiatorStatus = mapRadiator(statusJson);
+        const match = radiatorStatus.find((entry) => entry.slug === card.slug) ?? radiatorStatus[0];
+        if (match) {
+          updatedCard = buildRadiatorCard(
+            { ...match, name: match.name || card.name, slug: match.slug || card.slug },
+            bthomeTemperatures.value.get((match.name || card.name).toUpperCase()) ?? null,
+          );
+        }
+      } else if (card.kind === 'bulb') {
+        updatedCard = buildMerossCard(mapMeross(statusJson, card.slug));
+      }
+
+      if (updatedCard) {
+        cards.value = cards.value.map((existing) =>
+          existing.id === card.id ? updatedCard! : existing,
+        );
+      }
+    } catch (e: any) {
+      errorMessage.value = e?.message || 'Unable to load device status';
+    }
+  }
+
   async function togglePower(cardId: string) {
     const card = cards.value.find((entry) => entry.id === cardId);
     if (!card?.togglePath) return;
@@ -347,7 +393,7 @@ export function useDeviceCards() {
       return;
     }
 
-    await refresh();
+    await refreshCard(card);
   }
 
   watch(authVersion, () => {
