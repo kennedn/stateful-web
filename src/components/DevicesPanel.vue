@@ -1,11 +1,12 @@
 <template>
-  <ThermostatView
+  <DevicesView
     :loading="loading"
     :error-message="errorMessage"
     :cards="filteredCards"
     :available-types="deviceTypes"
     :selected-types="selectedTypes"
     @refresh="refresh"
+    @toggle-power="togglePower"
     @toggle-type="toggleType"
     @select-all="selectAll"
   />
@@ -13,11 +14,11 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import ThermostatView from './ThermostatView.vue';
+import DevicesView from './DevicesView.vue';
 import { DEVICE_TYPES, useDeviceCards } from '../composables/useDeviceCards';
 import type { DeviceType } from '../composables/useDeviceCards';
 
-const { loading, errorMessage, cards, refresh } = useDeviceCards();
+const { loading, errorMessage, cards, refresh, togglePower } = useDeviceCards();
 const deviceTypes = DEVICE_TYPES;
 const selectedTypes = ref<DeviceType[]>([...DEVICE_TYPES]);
 
@@ -34,7 +35,11 @@ function toggleType(type: DeviceType) {
 }
 
 function selectAll() {
-  selectedTypes.value = [...DEVICE_TYPES];
+  if (selectedTypes.value.length === DEVICE_TYPES.length) {
+    selectedTypes.value = [];
+  } else {
+    selectedTypes.value = [...DEVICE_TYPES];
+  }
 }
 
 onMounted(() => {
