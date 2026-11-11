@@ -311,9 +311,22 @@ def main():
             check("document.documentElement.scrollWidth <= innerWidth")
             check("[...document.querySelectorAll('.device-tiles')].every(g=>new Set([...g.children].map(x=>x.getBoundingClientRect().height)).size===1)")
             check("[...document.querySelectorAll('.device-tile')].every(x=>x.scrollHeight<=x.clientHeight+1)")
+            check("[...document.querySelectorAll('.service-filter,.refresh-all,.refresh-category,.tile-tools button,.device-tile .quick-action')].every(x=>{const r=x.getBoundingClientRect();return r.height>=43.5 && r.width>=43.5})")
+            check("[...document.querySelectorAll('.service-filter')].every(x=>parseFloat(getComputedStyle(x).fontSize)>=15)")
+            check("parseFloat(getComputedStyle(document.querySelector('#device-search')).fontSize)>=16")
+            service('Soundbar')
+            check("document.querySelectorAll('.device-tile').length===1 && document.querySelector('.service-filter[aria-pressed=true]').textContent==='Soundbar'")
+            service('All devices')
+            for mobile_width in (320, 430):
+                call('Emulation.setDeviceMetricsOverride',{'width':mobile_width,'height':844,'deviceScaleFactor':1,'mobile':True})
+                evaluate("new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))")
+                check("document.documentElement.scrollWidth<=innerWidth")
+                check("[...document.querySelectorAll('.device-tile')].every(x=>x.scrollHeight<=x.clientHeight+1)")
+            call('Emulation.setDeviceMetricsOverride',{'width':390,'height':844,'deviceScaleFactor':1,'mobile':True})
+            evaluate("new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))")
             screenshot=call('Page.captureScreenshot',{'format':'png','captureBeyondViewport':False})
             Path('/tmp/stateful-mobile.png').write_bytes(base64.b64decode(screenshot['data']))
-            print('Browser checks passed: category-fit sizing, independent category sizes in search/favourites, animated on-state borders, muted palette/shadows, battery/status merge, global/category bulk refresh/concurrency/cancellation, early completion after confirmed state, stale-state retry, bounded follow-ups and replacement/cutoff, Snowdon shortcuts, device visuals and mobile layout.')
+            print('Browser checks passed: category-fit sizing, independent category sizes in search/favourites, animated on-state borders, muted palette/shadows, battery/status merge, global/category bulk refresh/concurrency/cancellation, early completion after confirmed state, stale-state retry, bounded follow-ups and replacement/cutoff, Snowdon shortcuts, device visuals and 320–430px mobile layouts with larger touch controls.')
         finally:
             if ws: ws.close()
             if process:
