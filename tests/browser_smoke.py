@@ -310,7 +310,7 @@ def main():
             check("[...document.querySelectorAll('.device-tile')].every(x=>x.scrollHeight<=x.clientHeight+1)")
             check("!document.querySelector('.brightness-meter') && ![...document.querySelectorAll('.state-metric dt')].some(x=>x.textContent==='Brightness')")
             if LEGACY:
-                check("window.KennednLegacy && document.querySelector('.legacy-border rect animate') && document.querySelector('.legacy-border').getAttribute('viewBox')")
+                check("window.KennednLegacy && document.querySelector('.legacy-border animateTransform') && document.querySelector('.legacy-border').getAttribute('viewBox')")
             else:
                 check('getComputedStyle(document.querySelector(' + selector(office) + '),"::after").animationName==="live-border"')
             check('getComputedStyle(document.querySelector(' + selector(office,".device-identity svg") + ')).filter==="none"')

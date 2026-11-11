@@ -16,10 +16,18 @@ const inputs = ['static/js/bootstrap.js', 'static/js/device-status.js', 'static/
 const source = read('static/css/app.css');
 const duration = source.match(/animation:live-border\s+([\d.]+s)/)?.[1] || '15s';
 const borderWidth = source.match(/\.device-tile\[data-power=on\][^{]+::after\{[^}]*?padding:([\d.]+)px/)?.[1] || '2';
+const gradient = source.match(/background:conic-gradient\(from var\(--border-angle\),(.+?)\);/)?.[1] || 'transparent 0deg,#fff 100deg,#fff 260deg,transparent 360deg';
+const borderStops = [...gradient.matchAll(/(transparent|#[\da-f]{3,8})\s+([\d.]+)deg/gi)].map(([,color,angle]) => {
+  let opacity = color === 'transparent' ? 0 : 1;
+  if (color.length === 5) opacity = parseInt(color[4] + color[4],16) / 255;
+  if (color.length === 9) opacity = parseInt(color.slice(7,9),16) / 255;
+  return {angle:Number(angle), opacity};
+});
+
 const transform = text => babel.transformSync(text, {babelrc: false, configFile: false, sourceType: 'script', presets: [[preset, {targets: {safari: '8'}, modules: false, useBuiltIns: false}]], comments: true, compact: false}).code;
 const app = ['static/js/device-status.js','static/js/status-updates.js','static/js/app.js'].map(name => transform(read(name))).join('\n');
 const tileMinHeight = Number(source.match(/#device-grid\{[^}]*--tile-min-height:([\d.]+)px/)?.[1] || 240);
-const compat = 'window.KennednLegacyConfig=' + JSON.stringify({borderDuration: duration, tileMinHeight}) + ';\n' + read('scripts/legacy/compat.js');
+const compat = 'window.KennednLegacyConfig=' + JSON.stringify({borderDuration: duration, tileMinHeight, borderStops}) + ';\n' + read('scripts/legacy/compat.js');
 const variables = {};
 const tree = postcss.parse(source);
 tree.walkRules(rule => { if (rule.selector === ':root') rule.walkDecls(decl => { if (decl.prop.startsWith('--')) variables[decl.prop] = decl.value; }); });

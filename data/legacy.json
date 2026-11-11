@@ -6,15 +6,15 @@
     "static/js/status-updates.js": "f43b4a93ed2f9d2fdfa7165ab1ff3e5e5a1a3d47ffd5ad13b6b792a82e02e1e4",
     "static/js/app.js": "805a2cd5e0520f94618af150e215e8fe1577e2348546fe84feaad97309b304a0",
     "static/css/app.css": "7b7fb842c115526a4ba7d32cf59188a4500f920ce868400ed56f8d3f8973da0f",
-    "scripts/legacy/compat.js": "a2cea88613c0f6d793e0158873da70f19299aec683b3a9a33ede0e052f33738d",
+    "scripts/legacy/compat.js": "0cad57509c84885b2838fdff9dfe0eb0292dd22c7a97a14bef37db9ed7205f62",
     "scripts/legacy/layout.css": "62c5393cc38f1556cff1f8c8991e8b139115009d8f6fe59aa1cba5ab9f412976",
-    "scripts/legacy/build.cjs": "55fd5c10a14fdad86477c60b18945046c3169dbc53fb742b087a5d93c0029ff3",
+    "scripts/legacy/build.cjs": "a3266f11414d330c0a944d4001ca962110900e09d61367bc5bc499f1e78971d2",
     "static/js/vendor/core-js-3.26.1.min.js": "b646fe196e54efff7021a84caf00dfad5723d62c80465cf303906d9201968e7f",
     "static/js/vendor/fetch-3.6.20.js": "8c006dece7b95b63787c3ae297593c6bad9386cb8054697d18104177a5f52c87"
   },
   "outputs": {
     "static/js/legacy/app.js": "0fa29ff9530904d5b17c27f562360ba925d78e0d4873c6108ef50e0d197edecc",
-    "static/js/legacy/compat.js": "3aad5d437203b552658176b06330d540332e476ad284fea3f17850142aa091f8",
+    "static/js/legacy/compat.js": "d69814e13fd9d1c3420ad39af43a5c159304f4b73ed5614fc8702312f0a1384c",
     "static/css/legacy.css": "8655f03b69ab43fefc525686ca9b1fad6f87b203b8cd79f887a439d924a50c85"
   }
 }

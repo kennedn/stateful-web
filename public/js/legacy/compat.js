@@ -1,4 +1,4 @@
-window.KennednLegacyConfig={"borderDuration":"15s","tileMinHeight":240};
+window.KennednLegacyConfig={"borderDuration":"15s","tileMinHeight":240,"borderStops":[{"angle":0,"opacity":0},{"angle":100,"opacity":1},{"angle":260,"opacity":1},{"angle":360,"opacity":0}]};
 /* Browser API fallbacks for the ES5 build. ES standard-library shims load first. */
 (function () {
   'use strict';
@@ -141,21 +141,47 @@ window.KennednLegacyConfig={"borderDuration":"15s","tileMinHeight":240};
     var summary = details.querySelector('summary');
     if (summary) { summary.tabIndex = 0; summary.setAttribute('role', 'button'); summary.addEventListener('click', function () { details.open = !details.open; summary.setAttribute('aria-expanded', String(details.open)); }); summary.addEventListener('keydown', function (event) { if (event.keyCode === 13 || event.keyCode === 32) { event.preventDefault(); summary.click(); } }); }
   });
+  var borderId = 0;
   window.KennednLegacyUI = {
     updateTile: function (card, height) {
       card.style.height = height + 'px'; card.style.minHeight = height + 'px';
       var svg = card.querySelector('.legacy-border');
+      var ns = 'http://www.w3.org/2000/svg';
+      function node(name) { return document.createElementNS(ns, name); }
       if (!svg) {
-        svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('class', 'legacy-border'); svg.setAttribute('aria-hidden', 'true');
-        var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        var animate = document.createElementNS('http://www.w3.org/2000/svg', 'animate'); animate.setAttribute('attributeName', 'stroke-dashoffset'); animate.setAttribute('from', '0'); animate.setAttribute('repeatCount', 'indefinite');
-        rect.appendChild(animate); svg.appendChild(rect); card.appendChild(svg);
+        svg = node('svg'); svg.setAttribute('class', 'legacy-border'); svg.setAttribute('aria-hidden', 'true');
+        var defs = node('defs'), mask = node('mask'), sweep = node('g'), motion = node('animateTransform'), rect = node('rect');
+        var id = 'legacy-border-fade-' + (++borderId);
+        mask.id = id; mask.setAttribute('maskUnits', 'userSpaceOnUse'); mask.setAttribute('maskContentUnits', 'userSpaceOnUse');
+        motion.setAttribute('attributeName', 'transform'); motion.setAttribute('type', 'rotate'); motion.setAttribute('repeatCount', 'indefinite');
+        // Bake the conic opacity ramp into SVG wedges; animate only the mask group.
+        for (var i = 0; i < 72; i++) sweep.appendChild(node('path'));
+        sweep.appendChild(motion); mask.appendChild(sweep); defs.appendChild(mask); svg.appendChild(defs);
+        rect.setAttribute('mask', 'url(#' + id + ')'); svg.appendChild(rect); card.appendChild(svg);
       }
-      var width = card.offsetWidth, perimeter = 2 * (width + height - 4), shape = svg.firstChild;
+      var width = card.offsetWidth, cx = width / 2, cy = height / 2, radius = Math.sqrt(width * width + height * height);
+      var maskNode = svg.firstChild.firstChild, group = maskNode.firstChild, shape = svg.lastChild;
+      var stops = window.KennednLegacyConfig.borderStops;
       svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+      maskNode.setAttribute('x', '0'); maskNode.setAttribute('y', '0'); maskNode.setAttribute('width', width); maskNode.setAttribute('height', height);
+      for (var index = 0; index < 72; index++) {
+        var angle = index * 5 + 2.5, alpha = stops[0].opacity;
+        for (var j = 1; j < stops.length; j++) {
+          if (angle <= stops[j].angle) {
+            var span = stops[j].angle - stops[j - 1].angle;
+            alpha = stops[j - 1].opacity + (stops[j].opacity - stops[j - 1].opacity) * (span ? (angle - stops[j - 1].angle) / span : 1);
+            break;
+          }
+          alpha = stops[j].opacity;
+        }
+        var a = index * 5 * Math.PI / 180, b = (index * 5 + 5.03) * Math.PI / 180, wedge = group.childNodes[index];
+        wedge.setAttribute('d', 'M' + cx + ',' + cy + ' L' + (cx + radius * Math.sin(a)) + ',' + (cy - radius * Math.cos(a)) + ' L' + (cx + radius * Math.sin(b)) + ',' + (cy - radius * Math.cos(b)) + ' Z');
+        wedge.setAttribute('fill', 'white'); wedge.setAttribute('fill-opacity', Math.max(0, Math.min(1, alpha)));
+      }
+      group.lastChild.setAttribute('from', '0 ' + cx + ' ' + cy); group.lastChild.setAttribute('to', '360 ' + cx + ' ' + cy);
+      group.lastChild.setAttribute('dur', window.KennednLegacyConfig.borderDuration);
       shape.setAttribute('x', '1'); shape.setAttribute('y', '1'); shape.setAttribute('width', Math.max(0, width - 2)); shape.setAttribute('height', Math.max(0, height - 2));
-      shape.setAttribute('stroke-dasharray', (perimeter * 0.65) + ' ' + (perimeter * 0.35));
-      shape.firstChild.setAttribute('to', String(-perimeter)); shape.firstChild.setAttribute('dur', window.KennednLegacyConfig.borderDuration);
+
     }
   };
 })();
