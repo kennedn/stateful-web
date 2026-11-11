@@ -101,7 +101,8 @@ body{background:#1c817e;color:#fff;font-size:16px}h1,h2,h3{color:#fff}a{color:#f
 .device-tile .device-feedback{margin-top:auto}
 .device-tile .quick-controls{margin-top:0}
 
-/* Category-sized tiles normally; filtered results share a single height. */
+/* Each category fits its content in every view, with a common minimum height. */
+#device-grid{--tile-min-height:240px}
 .device-tiles{--status-space:28px}
 .device-tiles[data-service=thermostat],.device-tiles[data-service=radiator]{--status-space:100px}
 .device-tiles[data-service=bthome]{--status-space:108px}

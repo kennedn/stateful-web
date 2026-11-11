@@ -122,6 +122,16 @@ def main():
             check("document.querySelector('#connection-strip').hidden && !document.querySelector('#advanced-panel').open")
             check("!document.querySelector('a[href=\"https://kennedn.com/\"]') && !document.querySelector('a[href=\"https://kennedn.com/blog/\"]')")
             check("document.documentElement.scrollWidth <= innerWidth")
+            # Normal browsing keeps each category uniform, with compact simple categories.
+            evaluate("new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))")
+            check("[...document.querySelectorAll('.device-tiles')].every(g=>new Set([...g.children].map(x=>x.getBoundingClientRect().height)).size===1)")
+            check("document.querySelector('[data-service=meross] .device-tile').getBoundingClientRect().height < document.querySelector('[data-service=tvcom] .device-tile').getBoundingClientRect().height")
+            # Search preserves compact, independent category heights without API requests.
+            search('office')
+            check("document.querySelectorAll('.device-group').length>=3 && new Set([...document.querySelectorAll('.device-tile')].map(x=>x.getBoundingClientRect().height)).size>1")
+            check("document.querySelector('#device-grid').dataset.sizing==='category' && window.__calls.length===1")
+            search('')
+            check("document.querySelector('#device-grid').dataset.sizing==='category'")
             # Send the action once, even on a double click. A manual read supersedes its polling.
             evaluate('document.querySelector(' + selector(office,'[data-action=toggle]') + ').click(); document.querySelector(' + selector(office,'[data-action=toggle]') + ').click()')
             wait('document.querySelector(' + selector(office,'.device-feedback') + ').dataset.kind === "success"')
@@ -140,6 +150,13 @@ def main():
             evaluate("window.__mark=window.__calls.length; document.querySelector('#refresh-all').click()")
             wait("document.querySelector('#cancel-refresh').hidden && window.__calls.length>window.__mark")
             check("new Set(window.__calls.slice(window.__mark).map(x=>new URL(x.url).pathname)).size>40 && window.__calls.slice(window.__mark).every(x=>['status','battery'].includes(new URL(x.url).searchParams.get('code')))")
+            check("document.querySelectorAll('.device-tile').length===1")
+            # Mixed favourites keep independent category sizes and a common minimum.
+            service('All devices')
+            evaluate('document.querySelector(' + selector('/v2/bthome/office','.favorite-button') + ').click()')
+            service('★ Favourites')
+            check("document.querySelectorAll('.device-group').length===2 && new Set([...document.querySelectorAll('.device-tile')].map(x=>x.getBoundingClientRect().height)).size===2 && [...document.querySelectorAll('.device-tile')].every(x=>x.getBoundingClientRect().height>=240)")
+            evaluate('document.querySelector(' + selector('/v2/bthome/office','.favorite-button') + ').click()')
             check("document.querySelectorAll('.device-tile').length===1")
             # Category refresh is bounded to three concurrent reads.
             service('Television')
@@ -292,10 +309,11 @@ def main():
             call('Emulation.setDeviceMetricsOverride',{'width':390,'height':844,'deviceScaleFactor':1,'mobile':True})
             evaluate("new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))")
             check("document.documentElement.scrollWidth <= innerWidth")
+            check("[...document.querySelectorAll('.device-tiles')].every(g=>new Set([...g.children].map(x=>x.getBoundingClientRect().height)).size===1)")
             check("[...document.querySelectorAll('.device-tile')].every(x=>x.scrollHeight<=x.clientHeight+1)")
             screenshot=call('Page.captureScreenshot',{'format':'png','captureBeyondViewport':False})
             Path('/tmp/stateful-mobile.png').write_bytes(base64.b64decode(screenshot['data']))
-            print('Browser checks passed: uniform tile sizing, animated on-state borders, muted palette/shadows, battery/status merge, global/category bulk refresh/concurrency/cancellation, early completion after confirmed state, stale-state retry, bounded follow-ups and replacement/cutoff, Snowdon shortcuts, device visuals and mobile layout.')
+            print('Browser checks passed: category-fit sizing, independent category sizes in search/favourites, animated on-state borders, muted palette/shadows, battery/status merge, global/category bulk refresh/concurrency/cancellation, early completion after confirmed state, stale-state retry, bounded follow-ups and replacement/cutoff, Snowdon shortcuts, device visuals and mobile layout.')
         finally:
             if ws: ws.close()
             if process:

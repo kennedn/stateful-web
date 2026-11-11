@@ -610,10 +610,9 @@
     board.classList.add('measuring-tiles');
     const sizes = groups.map((group) => ({group, height: Math.ceil(Math.max(...[...group.children].map((card) => card.getBoundingClientRect().height)) / 4) * 4}));
     board.classList.remove('measuring-tiles');
-    const filtered = activeService !== 'all' || $('device-search').value.trim() !== '';
-    const shared = filtered ? Math.max(...sizes.map(({height}) => height)) : null;
-    board.dataset.sizing = filtered ? 'shared' : 'category';
-    for (const {group, height} of sizes) group.style.setProperty('--tile-height', (shared ?? height) + 'px');
+    const minimum = parseFloat(getComputedStyle(board).getPropertyValue('--tile-min-height')) || 240;
+    board.dataset.sizing = 'category';
+    for (const {group, height} of sizes) group.style.setProperty('--tile-height', Math.max(minimum, height) + 'px');
   }
   function scheduleTileSizing() {
     cancelAnimationFrame(tileSizeFrame);
