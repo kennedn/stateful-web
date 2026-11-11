@@ -2,7 +2,7 @@
   "version": 1,
   "baseURL": "https://api.kennedn.com",
   "root": "/v2",
-  "generatedAt": "2026-11-11T21:15:15.040842+00:00",
+  "generatedAt": "2026-11-11T22:25:52.828413+00:00",
   "requestCount": 1101,
   "nodes": {
     "/v2": {
