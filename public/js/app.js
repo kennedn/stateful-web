@@ -600,6 +600,28 @@
     renderDashboard();
   }
 
+  let tileSizeFrame;
+  function updateTileSizes() {
+    const board = $('device-grid');
+    const groups = [...board.querySelectorAll('.device-tiles')];
+    if (!groups.length) return;
+    // Measure real headings and controls with a fixed allowance for readings/messages.
+    // This runs on filtering or viewport changes, never on polling/message updates.
+    board.classList.add('measuring-tiles');
+    const sizes = groups.map((group) => ({group, height: Math.ceil(Math.max(...[...group.children].map((card) => card.getBoundingClientRect().height)) / 4) * 4}));
+    board.classList.remove('measuring-tiles');
+    const filtered = activeService !== 'all' || $('device-search').value.trim() !== '';
+    const shared = filtered ? Math.max(...sizes.map(({height}) => height)) : null;
+    board.dataset.sizing = filtered ? 'shared' : 'category';
+    for (const {group, height} of sizes) group.style.setProperty('--tile-height', (shared ?? height) + 'px');
+  }
+  function scheduleTileSizing() {
+    cancelAnimationFrame(tileSizeFrame);
+    tileSizeFrame = requestAnimationFrame(updateTileSizes);
+  }
+  window.addEventListener('resize', scheduleTileSizing);
+  document.fonts.ready.then(scheduleTileSizing);
+
   function renderDashboard() {
     if (!bulkController) { $('bulk-progress').textContent = ''; $('bulk-toolbar').hidden = true; }
     const nodes = deviceNodes();
@@ -631,6 +653,7 @@
         refresh.disabled = !!bulkController; refresh.addEventListener('click', () => refreshDevices(groupNodes)); heading.append(refresh);
       }
       const tiles = el('div', 'device-tiles');
+      tiles.dataset.service = service;
       for (const [tileIndex, node] of groupNodes.entries()) {
         const card = el('article', 'device-tile'); card.dataset.path = node.path;
         const color = ['#c8225e', '#1d7775', '#66089b'][tileIndex % 3];
@@ -656,6 +679,7 @@
       }
       section.append(heading, tiles); $('device-grid').append(section);
     }
+    updateTileSizes();
   }
 
   function openDevice(node) {
