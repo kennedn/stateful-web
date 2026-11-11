@@ -15,10 +15,10 @@
   <title>{{ .Site.Title }}</title>
   <link rel="icon" type="image/x-icon" href="{{ "favicon.ico" | relURL }}">
   {{- $touchSource := resources.Get "images/home-screen.png" -}}
-  {{- $touchDefault := resources.Copy "apple-touch-icon.png" ($touchSource.Resize "180x180 png") -}}
+  {{- $touchDefault := $touchSource.Resize "180x180 png" -}}
   <link rel="apple-touch-icon" href="{{ $touchDefault.RelPermalink }}">
   {{- range slice 76 120 152 180 -}}
-    {{- $touchIcon := resources.Copy (printf "icon-%d.png" .) ($touchSource.Resize (printf "%dx%d png" . .)) -}}
+    {{- $touchIcon := $touchSource.Resize (printf "%dx%d png" . .) -}}
   <link rel="apple-touch-icon" sizes="{{ . }}x{{ . }}" href="{{ $touchIcon.RelPermalink }}">
   {{- end -}}
   <link rel="stylesheet" href="{{ "css/app.css" | relURL }}">
