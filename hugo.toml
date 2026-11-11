@@ -1,0 +1,14 @@
+baseURL = '/'
+locale = 'en-GB'
+title = "Kennedn's Controls"
+disableKinds = ['taxonomy', 'term', 'RSS', 'sitemap']
+[params]
+  # Use an empty string when an /v2 reverse proxy shares the site's origin.
+  apiBaseURL = 'https://api.kennedn.com'
+[outputs]
+  home = ['HTML', 'catalog']
+[outputFormats.catalog]
+  mediaType = 'application/json'
+  baseName = 'api-catalog'
+  isPlainText = true
+  notAlternative = true
