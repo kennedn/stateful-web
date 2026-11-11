@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 260" width="320" height="260" role="img" aria-labelledby="title desc">
+  <title id="title">Animated tile border</title>
+  <desc id="desc">Standalone export of the legacy border mask: 72 opacity wedges, rotating every 15s.</desc>
+  <defs>
+    <mask id="border-fade" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="320" height="260">
+      <g>
+        <path d="M160.0,130.0 L160.0000,-282.3106 L196.1503,-280.7227 Z" fill="white" fill-opacity="0.02500" />
+        <path d="M160.0,130.0 L195.9352,-280.7416 L231.8096,-276.0091 Z" fill="white" fill-opacity="0.07500" />
+        <path d="M160.0,130.0 L231.5970,-276.0466 L266.9223,-268.2055 Z" fill="white" fill-opacity="0.12500" />
+        <path d="M160.0,130.0 L266.7138,-268.2614 L301.2214,-257.3713 Z" fill="white" fill-opacity="0.17500" />
+        <path d="M160.0,130.0 L301.0185,-257.4452 L334.4456,-243.5890 Z" fill="white" fill-opacity="0.22500" />
+        <path d="M160.0,130.0 L334.2500,-243.6803 L366.3422,-226.9634 Z" fill="white" fill-opacity="0.27500" />
+        <path d="M160.0,130.0 L366.1553,-227.0714 L396.6684,-207.6212 Z" fill="white" fill-opacity="0.32500" />
+        <path d="M160.0,130.0 L396.4916,-207.7450 L425.1935,-185.7094 Z" fill="white" fill-opacity="0.37500" />
+        <path d="M160.0,130.0 L425.0281,-185.8482 L451.7002,-161.3949 Z" fill="white" fill-opacity="0.42500" />
+        <path d="M160.0,130.0 L451.5476,-161.5476 L475.9869,-134.8627 Z" fill="white" fill-opacity="0.47500" />
+        <path d="M160.0,130.0 L475.8482,-135.0281 L497.8688,-106.3147 Z" fill="white" fill-opacity="0.52500" />
+        <path d="M160.0,130.0 L497.7450,-106.4916 L517.1793,-75.9683 Z" fill="white" fill-opacity="0.57500" />
+        <path d="M160.0,130.0 L517.0714,-76.1553 L533.7715,-44.0543 Z" fill="white" fill-opacity="0.62500" />
+        <path d="M160.0,130.0 L533.6803,-44.2500 L547.5190,-10.8156 Z" fill="white" fill-opacity="0.67500" />
+        <path d="M160.0,130.0 L547.4452,-11.0185 L558.3172,23.4947 Z" fill="white" fill-opacity="0.72500" />
+        <path d="M160.0,130.0 L558.2614,23.2862 L566.0841,58.6156 Z" fill="white" fill-opacity="0.77500" />
+        <path d="M160.0,130.0 L566.0466,58.4030 L570.7604,94.2798 Z" fill="white" fill-opacity="0.82500" />
+        <path d="M160.0,130.0 L570.7416,94.0648 L572.3105,130.2159 Z" fill="white" fill-opacity="0.87500" />
+        <path d="M160.0,130.0 L572.3106,130.0000 L570.7227,166.1503 Z" fill="white" fill-opacity="0.92500" />
+        <path d="M160.0,130.0 L570.7416,165.9352 L566.0091,201.8096 Z" fill="white" fill-opacity="0.97500" />
+        <path d="M160.0,130.0 L566.0466,201.5970 L558.2055,236.9223 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L558.2614,236.7138 L547.3713,271.2214 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L547.4452,271.0185 L533.5890,304.4456 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L533.6803,304.2500 L516.9634,336.3422 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L517.0714,336.1553 L497.6212,366.6684 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L497.7450,366.4916 L475.7094,395.1935 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L475.8482,395.0281 L451.3949,421.7002 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L451.5476,421.5476 L424.8627,445.9869 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L425.0281,445.8482 L396.3147,467.8688 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L396.4916,467.7450 L365.9683,487.1793 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L366.1553,487.0714 L334.0543,503.7715 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L334.2500,503.6803 L300.8156,517.5190 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L301.0185,517.4452 L266.5053,528.3172 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L266.7138,528.2614 L231.3844,536.0841 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L231.5970,536.0466 L195.7202,540.7604 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L195.9352,540.7416 L159.7841,542.3105 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L160.0000,542.3106 L123.8497,540.7227 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L124.0648,540.7416 L88.1904,536.0091 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L88.4030,536.0466 L53.0777,528.2055 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L53.2862,528.2614 L18.7786,517.3713 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L18.9815,517.4452 L-14.4456,503.5890 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L-14.2500,503.6803 L-46.3422,486.9634 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L-46.1553,487.0714 L-76.6684,467.6212 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L-76.4916,467.7450 L-105.1935,445.7094 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L-105.0281,445.8482 L-131.7002,421.3949 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L-131.5476,421.5476 L-155.9869,394.8627 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L-155.8482,395.0281 L-177.8688,366.3147 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L-177.7450,366.4916 L-197.1793,335.9683 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L-197.0714,336.1553 L-213.7715,304.0543 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L-213.6803,304.2500 L-227.5190,270.8156 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L-227.4452,271.0185 L-238.3172,236.5053 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L-238.2614,236.7138 L-246.0841,201.3844 Z" fill="white" fill-opacity="1.00000" />
+        <path d="M160.0,130.0 L-246.0466,201.5970 L-250.7604,165.7202 Z" fill="white" fill-opacity="0.97500" />
+        <path d="M160.0,130.0 L-250.7416,165.9352 L-252.3105,129.7841 Z" fill="white" fill-opacity="0.92500" />
+        <path d="M160.0,130.0 L-252.3106,130.0000 L-250.7227,93.8497 Z" fill="white" fill-opacity="0.87500" />
+        <path d="M160.0,130.0 L-250.7416,94.0648 L-246.0091,58.1904 Z" fill="white" fill-opacity="0.82500" />
+        <path d="M160.0,130.0 L-246.0466,58.4030 L-238.2055,23.0777 Z" fill="white" fill-opacity="0.77500" />
+        <path d="M160.0,130.0 L-238.2614,23.2862 L-227.3713,-11.2214 Z" fill="white" fill-opacity="0.72500" />
+        <path d="M160.0,130.0 L-227.4452,-11.0185 L-213.5890,-44.4456 Z" fill="white" fill-opacity="0.67500" />
+        <path d="M160.0,130.0 L-213.6803,-44.2500 L-196.9634,-76.3422 Z" fill="white" fill-opacity="0.62500" />
+        <path d="M160.0,130.0 L-197.0714,-76.1553 L-177.6212,-106.6684 Z" fill="white" fill-opacity="0.57500" />
+        <path d="M160.0,130.0 L-177.7450,-106.4916 L-155.7094,-135.1935 Z" fill="white" fill-opacity="0.52500" />
+        <path d="M160.0,130.0 L-155.8482,-135.0281 L-131.3949,-161.7002 Z" fill="white" fill-opacity="0.47500" />
+        <path d="M160.0,130.0 L-131.5476,-161.5476 L-104.8627,-185.9869 Z" fill="white" fill-opacity="0.42500" />
+        <path d="M160.0,130.0 L-105.0281,-185.8482 L-76.3147,-207.8688 Z" fill="white" fill-opacity="0.37500" />
+        <path d="M160.0,130.0 L-76.4916,-207.7450 L-45.9683,-227.1793 Z" fill="white" fill-opacity="0.32500" />
+        <path d="M160.0,130.0 L-46.1553,-227.0714 L-14.0543,-243.7715 Z" fill="white" fill-opacity="0.27500" />
+        <path d="M160.0,130.0 L-14.2500,-243.6803 L19.1844,-257.5190 Z" fill="white" fill-opacity="0.22500" />
+        <path d="M160.0,130.0 L18.9815,-257.4452 L53.4947,-268.3172 Z" fill="white" fill-opacity="0.17500" />
+        <path d="M160.0,130.0 L53.2862,-268.2614 L88.6156,-276.0841 Z" fill="white" fill-opacity="0.12500" />
+        <path d="M160.0,130.0 L88.4030,-276.0466 L124.2798,-280.7604 Z" fill="white" fill-opacity="0.07500" />
+        <path d="M160.0,130.0 L124.0648,-280.7416 L160.2159,-282.3105 Z" fill="white" fill-opacity="0.02500" />
+        <animateTransform attributeName="transform" type="rotate" from="0 160.0 130.0" to="360 160.0 130.0" dur="15s" repeatCount="indefinite" />
+      </g>
+    </mask>
+  </defs>
+  <rect width="320" height="260" fill="#c8225e" />
+  <rect x="1" y="1" width="318" height="258" fill="none" stroke="white" stroke-width="2" mask="url(#border-fade)" />
+</svg>
