@@ -650,7 +650,14 @@
       const ai = priority.indexOf(a), bi = priority.indexOf(b);
       return (ai < 0 ? 100 : ai) - (bi < 0 ? 100 : bi);
     });
-    const shown = compact && serviceOf(node) === 'snowdon' ? ['power', 'input', 'status'].filter((code) => node.commands.includes(code)) : compact ? codes.filter((code) => !needsArguments.has(code)).slice(0, numbers ? 1 : 3) : codes;
+    let shown;
+    if (compact && serviceOf(node) === 'tvcom' && node.name === 'input_select') {
+      shown = ['hdmi_1', 'hdmi_2', 'hdmi_3', 'status'].filter((code) => node.commands.includes(code));
+    } else if (compact && serviceOf(node) === 'snowdon') {
+      shown = ['power', 'input', 'status'].filter((code) => node.commands.includes(code));
+    } else {
+      shown = compact ? codes.filter((code) => !needsArguments.has(code)).slice(0, numbers ? 1 : 3) : codes;
+    }
     for (const code of shown) container.append(quickButton(node, code, code === 'toggle' || code === 'on' || code === 'power'));
     return container;
   }
