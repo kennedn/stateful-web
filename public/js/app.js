@@ -13,6 +13,53 @@
   const colors = ['#1c817e', '#dd2164', '#6e04a9'];
   const configuredBase = document.body.dataset.apiBase;
   const apiBase = configuredBase === '' ? location.origin : configuredBase.replace(/\/$/, '');
+  const authStorageKey = 'kennedn-api-auth-v1:' + new URL(apiBase).origin;
+  let credentialUsername = '';
+
+  function clearSavedAuth() {
+    let cleared = true;
+    for (const type of ['localStorage', 'sessionStorage']) {
+      try { window[type].removeItem(authStorageKey); } catch { cleared = false; }
+    }
+    return cleared;
+  }
+
+  function forgetAuth() {
+    credentials = null; credentialUsername = '';
+    $('remember-auth').checked = false;
+    $('auth-button').textContent = 'Sign in';
+    return clearSavedAuth();
+  }
+
+  function restoreAuth() {
+    for (const type of ['localStorage', 'sessionStorage']) {
+      try {
+        const raw = window[type].getItem(authStorageKey);
+        if (!raw) continue;
+        const saved = JSON.parse(raw);
+        if (typeof saved.username !== 'string' || typeof saved.authorization !== 'string' || !/^Basic [A-Za-z0-9+/]+={0,2}$/.test(saved.authorization)) {
+          window[type].removeItem(authStorageKey); continue;
+        }
+        credentials = saved.authorization; credentialUsername = saved.username;
+        $('username').value = saved.username;
+        $('remember-auth').checked = type === 'localStorage';
+        $('auth-button').textContent = 'Account';
+        return;
+      } catch { /* Unavailable or invalid browser storage does not stop the panel. */ }
+    }
+  }
+
+  function saveAuth(username, authorization, remember) {
+    const target = remember ? 'localStorage' : 'sessionStorage';
+    const other = remember ? 'sessionStorage' : 'localStorage';
+    try {
+      window[other].removeItem(authStorageKey);
+      window[target].setItem(authStorageKey, JSON.stringify({username, authorization}));
+      return true;
+    } catch { return false; }
+  }
+  restoreAuth();
+
 
   function apiURL(path) {
     if (!path.startsWith('/') || path.startsWith('//') || /[\\#\s]/.test(path)) {
@@ -36,7 +83,9 @@
       if (new URL(url).protocol !== 'https:') throw new Error('Sign in requires an HTTPS API connection.');
       headers.set('Authorization', auth);
     }
-    return fetch(url, { ...options, headers, credentials: 'omit', redirect: 'error', cache: 'no-store' });
+    const response = await fetch(url, { ...options, headers, credentials: 'omit', redirect: 'error', cache: 'no-store' });
+    if (response.status === 401 && auth && auth === credentials) forgetAuth();
+    return response;
   }
 
   function networkMessage(error) {
@@ -352,8 +401,18 @@
   $('auth-dialog').addEventListener('cancel', () => { $('password').value = ''; });
   $('sign-out').addEventListener('click', () => {
     cancelStatusWork();
-    credentials = null; $('username').value = ''; $('password').value = ''; $('auth-button').textContent = 'Sign in';
-    $('auth-dialog').close(); if (catalog) void checkConnection();
+    const cleared = forgetAuth();
+    $('username').value = ''; $('password').value = '';
+    $('auth-dialog').close();
+    if (catalog) void checkConnection().then(() => {
+      if (!cleared) { $('notice').textContent = 'Browser storage could not be cleared. Remove this site’s saved data in your browser settings.'; $('notice').hidden = false; }
+    });
+  });
+  $('remember-auth').addEventListener('change', () => {
+    if (!credentials) return;
+    const saved = saveAuth(credentialUsername, credentials, $('remember-auth').checked);
+    $('auth-error').hidden = saved;
+    if (!saved) $('auth-error').textContent = 'Browser storage is unavailable. The remember setting could not be saved.';
   });
   $('auth-form').addEventListener('submit', async (event) => {
     event.preventDefault(); $('auth-error').hidden = true; $('login').disabled = true;
@@ -361,8 +420,10 @@
       const candidate = basicAuth($('username').value, $('password').value);
       const response = await apiFetch(apiURL(catalog.root), { signal: AbortSignal.timeout(12000) }, candidate);
       if (!response.ok) throw new Error(response.status === 401 ? 'Username or password was rejected.' : 'API returned HTTP ' + response.status + '.');
-      credentials = candidate; $('password').value = ''; $('auth-button').textContent = 'Account'; $('auth-dialog').close();
-      connectionError(); $('notice').hidden = true;
+      const saved = saveAuth($('username').value, candidate, $('remember-auth').checked);
+      credentials = candidate; credentialUsername = $('username').value; $('password').value = ''; $('auth-button').textContent = 'Account'; $('auth-dialog').close();
+      connectionError(); $('notice').hidden = saved;
+      if (!saved) $('notice').textContent = 'Connected, but browser storage is unavailable. This sign-in will be lost when the page reloads.';
     } catch (error) { $('auth-error').textContent = networkMessage(error); $('auth-error').hidden = false; }
     finally { $('login').disabled = false; }
   });

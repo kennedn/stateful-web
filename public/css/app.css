@@ -150,3 +150,32 @@ body{background:#1c817e;color:#fff;font-size:16px}h1,h2,h3{color:#fff}a{color:#f
 }
 @media(max-width:760px){.request-line select{width:110px}}
 @media(max-width:760px){.quick-action{min-width:44px}.brand{min-height:44px}.tree-toggle{flex-basis:44px;width:44px;min-width:44px}}
+
+.remember-auth{display:flex;align-items:center;gap:10px;min-height:44px;font-size:13px;cursor:pointer}
+.remember-auth input{width:20px;height:20px;min-width:20px;min-height:20px;margin:0;flex-shrink:0;accent-color:#dd2164}
+@media(max-width:760px){.remember-auth{font-size:14px}}
+
+/* Keep secondary mobile text readable alongside the enlarged controls. */
+@media(max-width:760px){
+  .help,.notice,.inline-note,.validation,.connection-strip,.advanced-info,.discovery-notes,dialog p,dialog .help{font-size:14px;line-height:1.5}
+  .device-group-heading>span,.panel-title>span,.small-muted,#bulk-progress,.response-tools,.snapshot,footer{font-size:14px}
+  .device-feedback{font-size:14px;line-height:1.5}
+  .device-feedback,.device-tile .device-feedback{height:3em;min-height:3em;max-height:3em}
+  .device-identity h3{font-size:18px}
+  .state-badge{font-size:14px}
+  .state-metric dt{font-size:14px;line-height:1.5}
+  .state-metric dd{font-size:24px}
+  .polling-state{font-size:14px}
+  label,.remember-auth{font-size:14px}
+  .request-preview code,.breadcrumbs,code,pre{font-size:14px}
+  .breadcrumbs button{min-height:44px;min-width:44px;font-size:14px}
+  .branch-name{font-size:16px}
+  .branch small,.branch-arrow{font-size:14px}
+  .request-preview .quiet{font-size:14px}
+  .advanced-panel>summary,.discovery-notes>summary,summary{font-size:16px}
+  .advanced-panel>summary span,summary .small-muted,.eyebrow,.endpoint-heading .eyebrow{font-size:13px}
+  .panel-toolbar{flex-wrap:wrap}
+  .connection-strip{max-width:none;flex-basis:100%}
+  .device-tiles[data-service=thermostat],.device-tiles[data-service=radiator]{--status-space:160px}
+  .device-tiles[data-service=bthome]{--status-space:180px}
+}

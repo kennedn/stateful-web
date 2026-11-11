@@ -41,7 +41,7 @@ window.fetch=async(input,options={})=>{
    });
   }finally{window.__activeReads--}
  }
- const unauthorized=window.__apiMode==='unauthorized'&&!headers.has('Authorization');
+ const unauthorized=window.__apiMode==='rejectAll'||(window.__apiMode==='unauthorized'&&!headers.has('Authorization'));
  const states={
   '/v2/meross/office':{onoff:1,rgb:16753920,luminance:67},
   '/v2/thermostat':{onoff:1,temperature:{current:188,target:350,heating:true}},
@@ -242,7 +242,7 @@ def main():
             evaluate("document.querySelector('#username').value='test'; document.querySelector('#password').value='test'; document.querySelector('#login').click()")
             wait("!document.querySelector('#auth-dialog').open")
             check("window.__calls.length-window.__mark === 2 && window.__calls.at(-1).method==='GET' && document.querySelector('#connection-strip').hidden")
-            check("localStorage.length===1 && localStorage.getItem('kennedn-control-favorites')!==null && sessionStorage.length===0 && document.querySelector('#password').value===''")
+            check("localStorage.length===1 && localStorage.getItem('kennedn-control-favorites')!==null && sessionStorage.length===1 && sessionStorage.getItem('kennedn-api-auth-v1:https://api.kennedn.com')!==null && document.querySelector('#password').value===''")
             # Multiple kinds of status render without free-text JSON.
             evaluate("document.querySelector('#advanced-panel').open=false")
             search(''); service('All devices')
@@ -326,7 +326,33 @@ def main():
             evaluate("new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))")
             screenshot=call('Page.captureScreenshot',{'format':'png','captureBeyondViewport':False})
             Path('/tmp/stateful-mobile.png').write_bytes(base64.b64decode(screenshot['data']))
-            print('Browser checks passed: category-fit sizing, independent category sizes in search/favourites, animated on-state borders, muted palette/shadows, battery/status merge, global/category bulk refresh/concurrency/cancellation, early completion after confirmed state, stale-state retry, bounded follow-ups and replacement/cutoff, Snowdon shortcuts, device visuals and 320–430px mobile layouts with larger touch controls.')
+            # Session sign-in survives reload, but is not written to localStorage by default.
+            auth_key='kennedn-api-auth-v1:https://api.kennedn.com'
+            call('Page.reload',{'ignoreCache':True})
+            wait("window.__calls?.length===1 && document.querySelector('#auth-button')?.textContent==='Account'")
+            check("window.__calls[0].method==='GET' && window.__calls[0].headers.authorization?.startsWith('Basic ') && !document.querySelector('#remember-auth').checked && document.querySelector('#password').value===''")
+            # Remember toggles move the existing sign-in between session and persistent storage.
+            evaluate("document.querySelector('#auth-button').click(); document.querySelector('#remember-auth').checked=true; document.querySelector('#remember-auth').dispatchEvent(new Event('change'))")
+            check('localStorage.getItem(' + json.dumps(auth_key) + ')!==null && sessionStorage.getItem(' + json.dumps(auth_key) + ')===null')
+            call('Page.reload',{'ignoreCache':True})
+            wait("window.__calls?.length===1 && document.querySelector('#auth-button')?.textContent==='Account'")
+            check("window.__calls[0].headers.authorization?.startsWith('Basic ') && document.querySelector('#remember-auth').checked && document.querySelector('#username').value==='test' && document.querySelector('#password').value===''")
+            evaluate("document.querySelector('#auth-button').click(); document.querySelector('#remember-auth').checked=false; document.querySelector('#remember-auth').dispatchEvent(new Event('change'))")
+            check('localStorage.getItem(' + json.dumps(auth_key) + ')===null && sessionStorage.getItem(' + json.dumps(auth_key) + ')!==null')
+            # Explicit clearing removes both stores, while preserving favourite pins.
+            evaluate("document.querySelector('#sign-out').click()")
+            wait("document.querySelector('#auth-button').textContent==='Sign in'")
+            check('localStorage.getItem(' + json.dumps(auth_key) + ')===null && sessionStorage.getItem(' + json.dumps(auth_key) + ')===null && localStorage.getItem("kennedn-control-favorites")!==null')
+            call('Page.reload',{'ignoreCache':True})
+            wait("window.__calls?.length===1")
+            check("!window.__calls[0].headers.authorization && document.querySelector('#auth-button').textContent==='Sign in'")
+            # A rejected remembered credential is discarded; no request is replayed.
+            evaluate("document.querySelector('#auth-button').click(); document.querySelector('#username').value='test'; document.querySelector('#password').value='test'; document.querySelector('#remember-auth').checked=true; document.querySelector('#login').click()")
+            wait("!document.querySelector('#auth-dialog').open")
+            evaluate("window.__apiMode='rejectAll'; window.__mark=window.__calls.length; document.querySelector('#reconnect').click()")
+            wait("document.querySelector('#auth-dialog').open && document.querySelector('#auth-button').textContent==='Sign in'")
+            check('localStorage.getItem(' + json.dumps(auth_key) + ')===null && sessionStorage.getItem(' + json.dumps(auth_key) + ')===null && window.__calls.length-window.__mark===1')
+            print('Browser checks passed: category-fit sizing, independent category sizes in search/favourites, animated on-state borders, muted palette/shadows, battery/status merge, global/category bulk refresh/concurrency/cancellation, early completion after confirmed state, stale-state retry, bounded follow-ups and replacement/cutoff, Snowdon shortcuts, device visuals and 320–430px mobile typography/touch controls and session/remembered sign-in, opt-out, clearing and 401 invalidation.')
         finally:
             if ws: ws.close()
             if process:
