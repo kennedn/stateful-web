@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: stateful-web
-          image: quay.io/kennedn/stateful-web:latest
+          image: quay.io/kennedn/stateful-web:static
           imagePullPolicy: Always
           ports:
             - containerPort: 80
