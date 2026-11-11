@@ -856,7 +856,6 @@
       $('api-origin').textContent = apiBase;
       $('node-count').textContent = Object.keys(catalog.nodes).length;
       $('snapshot-date').textContent = new Date(catalog.generatedAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
-      for (const warning of catalog.warnings) $('discovery-warnings').append(el('li', '', warning));
       expanded.add(catalog.root);
       navigate(location.hash.slice(1) || catalog.root, false);
       renderDashboard();

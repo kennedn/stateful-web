@@ -61,7 +61,6 @@
       </div>
     </section>
     </div></details>
-    <details class="discovery-notes"><summary>About this API map <span aria-hidden="true">↗</span></summary><p>The tree is generated using GET requests before Hugo builds the site. Device state is fetched only when you send a request. Rebuild to discover new devices.</p><ul id="discovery-warnings"></ul></details>
   </main>
   <footer><p>© Joshua Kennedy {{ now.Year }}</p></footer>
   <dialog id="auth-dialog" aria-labelledby="auth-title"><form id="auth-form"><div class="dialog-heading"><h2 id="auth-title">Connect to your API</h2><button id="auth-close" class="icon-button" type="button" aria-label="Close sign in">×</button></div><p>On your internal network, no sign in is needed. Outside it, use your API username and password.</p><label>Username<input id="username" autocomplete="username" required></label><label>Password<input id="password" type="password" autocomplete="current-password" required></label><label class="remember-auth"><input id="remember-auth" type="checkbox"><span>Remember sign-in on this device</span></label><p class="help">Sign-in survives reloads in this tab. Remembering it also keeps it after closing the browser. Only remember credentials on a device you trust.</p><p id="auth-error" role="alert" class="validation" hidden></p><div class="dialog-actions"><button id="sign-out" class="outline" type="button">Clear credentials</button><button id="login" class="primary" type="submit">Connect →</button></div></form></dialog>
