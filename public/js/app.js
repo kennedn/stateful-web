@@ -628,7 +628,7 @@
         const refresh = el('button', 'refresh-category icon-button', '↻'); refresh.type = 'button';
         refresh.setAttribute('aria-label', 'Refresh status for ' + (serviceNames[service] || title(service)));
         refresh.title = 'Refresh ' + (serviceNames[service] || title(service)) + ' statuses';
-        refresh.disabled = !!bulkController; refresh.addEventListener('click', () => refreshDevices(groupNodes)); heading.prepend(refresh);
+        refresh.disabled = !!bulkController; refresh.addEventListener('click', () => refreshDevices(groupNodes)); heading.append(refresh);
       }
       const tiles = el('div', 'device-tiles');
       for (const [tileIndex, node] of groupNodes.entries()) {
