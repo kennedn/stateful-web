@@ -13,7 +13,7 @@
   <meta name="description" content="Quick controls for Kennedn’s devices.">
   <meta name="color-scheme" content="light">
   <title>{{ .Site.Title }}</title>
-  <link rel="icon" href="{{ "logo.png" | relURL }}">
+  <link rel="icon" type="image/x-icon" href="{{ "favicon.ico" | relURL }}">
   {{- $touchSource := resources.Get "images/home-screen.png" -}}
   {{- $touchDefault := resources.Copy "apple-touch-icon.png" ($touchSource.Resize "180x180 png") -}}
   <link rel="apple-touch-icon" href="{{ $touchDefault.RelPermalink }}">
