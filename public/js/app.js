@@ -260,7 +260,7 @@
     node.children.forEach((path, index) => {
       const child = catalog.nodes[path];
       const button = el('button', 'branch'); button.type = 'button';
-      button.style.setProperty('--tile', colors[index % colors.length]);
+      if (!window.KennednLegacy) button.style.setProperty('--tile', colors[index % colors.length]);
       button.append(el('span', 'branch-icon', child.children.length ? '▧' : '◇'), el('span', 'branch-name', title(child.name)), el('small', '', child.error ? 'Discovery unavailable' : child.children.length ? child.children.length + ' endpoints' : child.commands.length + (child.commands.length === 1 ? ' command' : ' commands')), el('span', 'branch-arrow', '↗'));
       button.addEventListener('click', () => navigate(path));
       $('branches').append(button);
@@ -377,7 +377,10 @@
   async function copy(text, button) {
     const original = button.textContent;
     try { await navigator.clipboard.writeText(text); button.textContent = 'Copied'; }
-    catch { button.textContent = 'Copy unavailable'; }
+    catch {
+      $('copy-text').value = text;
+      if (!$('copy-dialog').open) $('copy-dialog').showModal();
+    }
     setTimeout(() => { button.textContent = original; }, 1600);
   }
   const shellQuote = (value) => "'" + value.replace(/'/g, "'\\''") + "'";
@@ -417,6 +420,7 @@
   $('auth-form').addEventListener('submit', async (event) => {
     event.preventDefault(); $('auth-error').hidden = true; $('login').disabled = true;
     try {
+      if (!$('username').value || !$('password').value) throw new Error('Enter your username and password.');
       const candidate = basicAuth($('username').value, $('password').value);
       const response = await apiFetch(apiURL(catalog.root), { signal: AbortSignal.timeout(12000) }, candidate);
       if (!response.ok) throw new Error(response.status === 401 ? 'Username or password was rejected.' : 'API returned HTTP ' + response.status + '.');
@@ -437,6 +441,8 @@
       void copy(command, $('copy-request'));
     } catch (error) { $('validation').textContent = error.message; $('validation').hidden = false; }
   });
+  $('copy-close').addEventListener('click', () => $('copy-dialog').close());
+  $('copy-select').addEventListener('click', () => { $('copy-text').focus(); $('copy-text').select(); $('copy-text').setSelectionRange(0, $('copy-text').value.length); });
   $('copy-response').addEventListener('click', () => { void copy(responseText, $('copy-response')); });
   window.addEventListener('hashchange', () => { if (catalog && location.hash.slice(1) !== selected) navigate(location.hash.slice(1), false); });
 
@@ -626,6 +632,7 @@
     const container = el('div', 'quick-controls');
     const numbers = numericRange(node);
     if (numbers) {
+      container.classList.add('numeric-controls');
       const group = el('div', 'device-range');
       const label = el('label', '', serviceOf(node) === 'tvcom' ? title(node.name) : 'Value');
       const row = el('div', 'range-row');
@@ -678,16 +685,21 @@
     board.classList.add('measuring-tiles');
     const sizes = groups.map((group) => ({group, height: Math.ceil(Math.max(...[...group.children].map((card) => card.getBoundingClientRect().height)) / 4) * 4}));
     board.classList.remove('measuring-tiles');
-    const minimum = parseFloat(getComputedStyle(board).getPropertyValue('--tile-min-height')) || 240;
+    const minimum = window.KennednLegacy ? window.KennednLegacyConfig.tileMinHeight : parseFloat(getComputedStyle(board).getPropertyValue('--tile-min-height')) || 240;
     board.dataset.sizing = 'category';
-    for (const {group, height} of sizes) group.style.setProperty('--tile-height', Math.max(minimum, height) + 'px');
+    for (const {group, height} of sizes) {
+      const fitted = Math.max(minimum, height);
+      if (!window.KennednLegacy) group.style.setProperty('--tile-height', fitted + 'px');
+      if (window.KennednLegacyUI) for (const card of group.children) window.KennednLegacyUI.updateTile(card, fitted);
+    }
   }
   function scheduleTileSizing() {
     cancelAnimationFrame(tileSizeFrame);
     tileSizeFrame = requestAnimationFrame(updateTileSizes);
   }
   window.addEventListener('resize', scheduleTileSizing);
-  document.fonts.ready.then(scheduleTileSizing);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(scheduleTileSizing);
+  else { window.addEventListener('load', scheduleTileSizing); setTimeout(scheduleTileSizing, 500); }
 
   function renderDashboard() {
     if (!bulkController) { $('bulk-progress').textContent = ''; $('bulk-toolbar').hidden = true; }
@@ -724,7 +736,9 @@
       for (const [tileIndex, node] of groupNodes.entries()) {
         const card = el('article', 'device-tile'); card.dataset.path = node.path;
         const color = ['#c8225e', '#1d7775', '#66089b'][tileIndex % 3];
-        card.style.setProperty('--device-color', color);
+        if (!window.KennednLegacy) card.style.setProperty('--device-color', color);
+        card.style.backgroundColor = color;
+        card.dataset.tone = ['pink', 'teal', 'purple'][tileIndex % 3];
         deviceColors.set(node.path, color);
         const pin = el('button', 'favorite-button', favorites.has(node.path) ? '★' : '☆'); pin.type = 'button';
         pin.setAttribute('aria-label', (favorites.has(node.path) ? 'Unpin ' : 'Pin ') + title(node.name));
@@ -751,7 +765,8 @@
 
   function openDevice(node) {
     activeDevice = node;
-    $('device-dialog').style.setProperty('--device-color', deviceColors.get(node.path) || '#1c817e');
+    if (!window.KennednLegacy) $('device-dialog').style.setProperty('--device-color', deviceColors.get(node.path) || '#1c817e');
+    $('device-dialog').style.backgroundColor = deviceColors.get(node.path) || '#1c817e';
     $('device-dialog-title').textContent = title(node.name);
     $('device-dialog-service').textContent = serviceNames[serviceOf(node)] || title(serviceOf(node));
     $('device-dialog-controls').replaceChildren(deviceControls(node, false));
@@ -767,8 +782,8 @@
     host.dataset.heating = model?.heating === true ? 'true' : 'false';
     host.dataset.online = model?.online || 'unknown';
     host.dataset.stale = reading?.stale ? 'true' : 'false';
-    host.style.setProperty('--light-color', model?.color || '#fff4b8');
-    if (model?.brightness != null) host.style.setProperty('--light-strength', Math.max(.15, model.brightness / 100));
+    if (!window.KennednLegacy) host.style.setProperty('--light-color', model?.color || '#fff4b8');
+    if (!window.KennednLegacy && model?.brightness != null) host.style.setProperty('--light-strength', Math.max(.15, model.brightness / 100));
     if (!model) return;
     const badges = el('div', 'state-badges');
     if (model.power !== null) badges.append(el('span', 'state-badge power-state', model.power === 'on' ? 'On' : 'Off'));

@@ -1,0 +1,100 @@
+/* Overrides for browsers without Grid, CSS variables, flex gap, :has or dialog. */
+.legacy-browser dialog:not([open]){display:none}
+.legacy-browser dialog[open]{display:block;position:fixed;top:50%;left:50%;right:auto;bottom:auto;margin:0;width:calc(100% - 32px);max-width:520px;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.legacy-browser .legacy-backdrop{position:fixed;top:0;right:0;bottom:0;left:0;background:rgba(16,38,37,.7)}
+.legacy-modal-open,.legacy-modal-open body{overflow:hidden}
+.legacy-browser .device-tiles{display:flex;flex-wrap:wrap;margin:0 -6px}
+.legacy-browser .device-tile{flex:0 0 auto;width:calc(25% - 12px);margin:6px;position:relative;min-height:240px}
+.legacy-browser .device-identity h3{margin-top:10px}
+.legacy-browser .device-identity{padding-top:24px}
+.legacy-browser .device-tiles .device-tile .device-state{flex:1 1 auto;min-height:0;overflow-y:auto}
+.legacy-browser .measuring-tiles .device-tile{height:auto!important;min-height:0!important;align-self:flex-start}
+.legacy-browser .measuring-tiles .device-tile .device-state{flex:none;height:28px!important;min-height:28px!important;max-height:28px!important}
+.legacy-browser .measuring-tiles [data-service=thermostat] .device-state,.legacy-browser .measuring-tiles [data-service=radiator] .device-state{height:100px!important;min-height:100px!important;max-height:100px!important}
+.legacy-browser .measuring-tiles [data-service=bthome] .device-state{height:108px!important;min-height:108px!important;max-height:108px!important}
+.legacy-browser .measuring-tiles [data-service=tvcom] .device-state{height:48px!important;min-height:48px!important;max-height:48px!important}
+.legacy-browser .measuring-tiles [data-service=snowdon] .device-state{height:52px!important;min-height:52px!important;max-height:52px!important}
+.legacy-browser .device-tile .quick-controls{display:flex;flex-wrap:wrap;margin:0 -4px -8px}
+.legacy-browser .device-tile .quick-action{flex:1 1 44px;margin:0 4px 8px;min-width:44px}
+.legacy-browser .numeric-controls .device-range{display:block;width:100%;margin:0 4px}
+.legacy-browser .numeric-controls .device-range label,.legacy-browser .numeric-controls .range-hint{display:none}
+.legacy-browser .numeric-controls .range-row{display:flex;align-items:center;margin:0 0 8px}
+.legacy-browser .numeric-controls .range-row input[type=number]{margin-left:10px}
+.legacy-browser .numeric-controls .device-range .quick-action{width:100%;margin:0 0 8px}
+.legacy-browser .numeric-controls>.quick-action{flex-basis:100%}
+.legacy-browser .device-tile .device-feedback:empty{display:block}
+.legacy-browser .tile-tools{display:flex}
+.legacy-browser .header-inner,.legacy-browser .panel-toolbar,.legacy-browser .panel-title,.legacy-browser .device-group-heading,.legacy-browser .dashboard-tools,.legacy-browser #service-filters,.legacy-browser .section-label,.legacy-browser .dialog-heading,.legacy-browser .dialog-actions,.legacy-browser .request-line,.legacy-browser .response-tools,.legacy-browser .range-row,.legacy-browser .state-badges,.legacy-browser .state-metrics,.legacy-browser .remember-auth{display:flex}
+.legacy-browser .panel-title>*+*,.legacy-browser .device-group-heading>*+*{margin-left:12px}
+.legacy-browser .brand img{margin-right:10px}
+.legacy-browser #service-filters{flex-wrap:wrap;margin-bottom:-8px}
+.legacy-browser .service-filter{margin-right:8px;margin-bottom:8px}
+.legacy-browser .dashboard-tools{align-items:flex-start}
+.legacy-browser .device-search{margin-left:20px;flex:0 0 240px}
+.legacy-browser .state-metrics{flex-wrap:wrap;margin-right:-16px}
+.legacy-browser .state-metric{margin-right:16px;margin-bottom:10px}
+.legacy-browser .state-badges{flex-wrap:wrap}
+.legacy-browser .state-badge{margin-right:6px;margin-bottom:6px}
+.legacy-browser .remember-auth input{margin-right:10px}
+.legacy-browser .tree-row{display:flex}
+.legacy-browser .tree-link{flex:1 1 auto}
+.legacy-browser .tree-link span:first-child{margin-right:9px}
+.legacy-browser .workspace{display:flex}
+.legacy-browser .sidebar{flex:0 0 260px}
+.legacy-browser .explorer-body{flex:1 1 auto;min-width:0}
+.legacy-browser .branches{display:flex;flex-wrap:wrap;margin:0 -5px}
+.legacy-browser .branch{width:calc(33.333% - 10px);margin:5px}
+.legacy-browser .request-options{display:block}
+.legacy-browser .request-options>label{margin-bottom:14px}
+.legacy-browser .request-line{flex-wrap:wrap}
+.legacy-browser .request-line .path-label{flex:1 1 120px}
+.legacy-browser .request-preview{display:flex}
+.legacy-browser .request-preview code{flex:1 1 auto;min-width:0;word-break:break-word}
+.legacy-browser .request-preview button{flex:0 0 auto;margin-left:10px}
+.legacy-browser #device-dialog-controls .quick-controls{display:flex;flex-wrap:wrap;margin-right:-8px}
+.legacy-browser #device-dialog-controls .quick-action{flex:1 1 120px;margin-right:8px;margin-bottom:10px}
+.legacy-browser #device-dialog-controls .device-range{width:100%}
+.legacy-browser .dialog-heading .icon-button{flex:0 0 44px}
+.legacy-browser .dialog-actions>button+button{margin-left:12px}
+.legacy-browser details:not([open])>*:not(summary){display:none}
+.legacy-browser summary{cursor:pointer}
+.legacy-browser pre{word-wrap:break-word;word-break:break-word}
+.legacy-browser .legacy-border{display:none;position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.legacy-browser .legacy-border rect{stroke:white;stroke-width:LEGACY_BORDER_WIDTH;fill:none}
+.legacy-browser .device-tile[data-power=on]:not([data-stale=true]):not([data-online=off]) .legacy-border{display:block}
+.legacy-browser .device-tile::after{display:none!important}
+.legacy-browser .manual-copy textarea{width:100%;min-height:160px;margin-top:16px;font-size:16px}
+@media(min-width:1600px){.legacy-browser .device-tile{width:calc(20% - 12px)}}
+@media(max-width:1100px){.legacy-browser .device-tile{width:calc(33.333% - 12px)}.legacy-browser .sidebar{flex-basis:225px}}
+@media(max-width:760px){
+.legacy-browser .device-tiles{margin:0 -5px}
+.legacy-browser .device-tile{width:calc(50% - 10px);margin:5px}
+.legacy-browser .dashboard-tools{display:block}
+.legacy-browser .device-search{width:100%;margin:16px 0 0}
+.legacy-browser #service-filters{width:100%}
+.legacy-browser .service-filter{font-size:15px;min-height:44px}
+.legacy-browser .panel-title,.legacy-browser .panel-toolbar,.legacy-browser .device-group-heading{flex-wrap:wrap}
+.legacy-browser .panel-title>*+*,.legacy-browser .device-group-heading>*+*{margin-left:10px}
+.legacy-browser .workspace{display:block}
+.legacy-browser .sidebar{border-right:0}
+.legacy-browser .branches .branch{width:calc(50% - 10px)}
+.legacy-browser .request-line .primary,.legacy-browser .request-line #cancel{width:100%;margin:8px 0 0}
+.legacy-browser .measuring-tiles [data-service=thermostat] .device-state,.legacy-browser .measuring-tiles [data-service=radiator] .device-state{height:160px!important;min-height:160px!important;max-height:160px!important}
+.legacy-browser .measuring-tiles [data-service=bthome] .device-state{height:180px!important;min-height:180px!important;max-height:180px!important}
+}
+@media(max-width:360px){.legacy-browser .device-tile{width:calc(100% - 10px)}}
+
+.legacy-browser .device-tile[data-tone=pink] .main-action,.legacy-browser .device-tile[data-tone=pink] .state-selected{color:#c8225e}
+.legacy-browser .device-tile[data-tone=teal] .main-action,.legacy-browser .device-tile[data-tone=teal] .state-selected{color:#1d7775}
+.legacy-browser .device-tile[data-tone=purple] .main-action,.legacy-browser .device-tile[data-tone=purple] .state-selected{color:#66089b}
+.legacy-browser *{gap:0!important}
+.legacy-browser .commands>.command{margin:4px}
+.legacy-browser .bulk-toolbar>*{margin-right:14px}
+.legacy-browser .device-tile .quick-action{flex:1 1 auto}
+.legacy-browser .device-tile [data-action=toggle]{min-width:76px;white-space:nowrap}
+@media(max-width:760px){.legacy-browser .measuring-tiles .device-tile .device-state{height:36px!important;min-height:36px!important;max-height:36px!important}.legacy-browser .measuring-tiles [data-service=thermostat] .device-state,.legacy-browser .measuring-tiles [data-service=radiator] .device-state{height:160px!important;min-height:160px!important;max-height:160px!important}.legacy-browser .measuring-tiles [data-service=bthome] .device-state{height:180px!important;min-height:180px!important;max-height:180px!important}.legacy-browser .measuring-tiles [data-service=tvcom] .device-state{height:48px!important;min-height:48px!important;max-height:48px!important}.legacy-browser .measuring-tiles [data-service=snowdon] .device-state{height:52px!important;min-height:52px!important;max-height:52px!important}}
+
+.legacy-modal-open body{position:fixed;width:100%}
+
+.legacy-browser body{-webkit-text-size-adjust:100%}
+.legacy-browser button{-webkit-appearance:none}

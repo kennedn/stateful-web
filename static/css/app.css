@@ -179,3 +179,7 @@ body{background:#1c817e;color:#fff;font-size:16px}h1,h2,h3{color:#fff}a{color:#f
   .device-tiles[data-service=thermostat],.device-tiles[data-service=radiator]{--status-space:160px}
   .device-tiles[data-service=bthome]{--status-space:180px}
 }
+
+/* Hide custom dialog content before legacy modal support has loaded. */
+dialog:not([open]){display:none}
+.manual-copy textarea{min-height:160px;font-size:16px;margin:16px 0}

@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -14,6 +15,7 @@ import urllib.request
 import websocket
 
 ROOT = Path(__file__).resolve().parents[1]
+LEGACY = '--legacy' in sys.argv
 
 class QuietHandler(SimpleHTTPRequestHandler):
     def log_message(self, *_):
@@ -103,7 +105,7 @@ def main():
                 assert evaluate(expression), expression + ' / ' + str(evaluate('({calls:window.__calls.slice(window.__mark),errors:window.__errors})'))
             call('Page.enable')
             call('Log.enable')
-            call('Page.addScriptToEvaluateOnNewDocument', {'source': MOCK})
+            call('Page.addScriptToEvaluateOnNewDocument', {'source': MOCK + ((ROOT / 'tests/legacy_environment.js').read_text() if LEGACY else '')})
             call('Emulation.setDeviceMetricsOverride', {'width': 1440, 'height': 1100, 'deviceScaleFactor': 1, 'mobile': False})
             call('Emulation.setEmulatedMedia', {'features': [{'name': 'prefers-color-scheme', 'value': 'light'}]})
             call('Page.navigate', {'url': f'http://127.0.0.1:{server.server_port}/'})
@@ -177,6 +179,10 @@ def main():
             click('/v2/tvcom/volume','status')
             reading('/v2/tvcom/volume','26')
             check('document.querySelector(' + selector('/v2/tvcom/volume','input[type=number]') + ').value === "26"')
+            if LEGACY:
+                evaluate('window.__invalidMark=window.__calls.length; let invalidInput=document.querySelector(' + selector('/v2/tvcom/volume','input[type=number]') + '); invalidInput.value=101; document.querySelector(' + selector('/v2/tvcom/volume','.main-action') + ').click()')
+                check("window.__calls.length===window.__invalidMark")
+                evaluate('document.querySelector(' + selector('/v2/tvcom/volume','input[type=number]') + ').value=26')
             # Radiator battery is a partial reading: preserve temperature/power across both reads.
             service('Radiators'); search('radiator/office')
             evaluate("window.__mark=window.__calls.length; document.querySelector('.refresh-category').click()")
@@ -229,6 +235,11 @@ def main():
             check("!document.querySelector('#device-dialog').open")
             evaluate("document.querySelector('.more-button').click()")
             check("document.querySelector('#device-dialog').open && getComputedStyle(document.querySelector('#device-dialog')).backgroundColor === getComputedStyle(document.querySelector('.device-tile')).backgroundColor")
+            if LEGACY:
+                evaluate("document.querySelector('#auth-button').click()")
+                check("document.querySelector('#auth-dialog').open && document.querySelector('#device-dialog').open && document.querySelector('#device-dialog').getAttribute('aria-hidden')==='true'")
+                evaluate("document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',keyCode:27,bubbles:true}))")
+                check("!document.querySelector('#auth-dialog').open && document.querySelector('#device-dialog').open && !document.querySelector('.legacy-backdrop').hidden")
             evaluate("document.querySelector('#device-dialog [data-action=rgb]').click()")
             check("document.querySelector('#advanced-panel').open && document.querySelector('#code').value==='rgb'")
             evaluate("window.__mark=window.__calls.length; document.querySelector('#request-path').value='//evil.example'; document.querySelector('#send').click()")
@@ -294,18 +305,21 @@ def main():
             check("window.__calls.slice(window.__mark).every(x=>new URL(x.url).pathname==='/v2/meross/office' && x.at-window.__pollStarted<10000)")
             check("(()=>{const r=window.__calls.slice(window.__mark).filter(x=>new URL(x.url).searchParams.get('code')==='status').map(x=>x.at-window.__pollStarted); return r[0]>=80 && r[0]<350 && r[1]>=230 && r[2]>=480})()")
             evaluate("delete window.__pollSequence; window.scrollTo(0,0)")
-            evaluate('document.fonts.ready.then(()=>true)')
+            evaluate('document.fonts ? document.fonts.ready.then(()=>true) : true')
             check("window.__errors.length===0")
             check("[...document.querySelectorAll('.device-tile')].every(x=>x.scrollHeight<=x.clientHeight+1)")
             check("!document.querySelector('.brightness-meter') && ![...document.querySelectorAll('.state-metric dt')].some(x=>x.textContent==='Brightness')")
-            check('getComputedStyle(document.querySelector(' + selector(office) + '),"::after").animationName==="live-border"')
+            if LEGACY:
+                check("window.KennednLegacy && document.querySelector('.legacy-border rect animate') && document.querySelector('.legacy-border').getAttribute('viewBox')")
+            else:
+                check('getComputedStyle(document.querySelector(' + selector(office) + '),"::after").animationName==="live-border"')
             check('getComputedStyle(document.querySelector(' + selector(office,".device-identity svg") + ')).filter==="none"')
             check("[...document.querySelectorAll('.device-tile')].every(x=>getComputedStyle(x).boxShadow!=='none')")
             check("document.querySelector('.refresh-category').textContent==='↻' && document.querySelector('#refresh-all').textContent==='↻'")
             check("getComputedStyle(document.querySelector('.device-tile')).backgroundImage==='none' && getComputedStyle(document.querySelector('.device-tile')).transform==='none'")
             time.sleep(.15)
             screenshot=call('Page.captureScreenshot',{'format':'png','captureBeyondViewport':False})
-            Path('/tmp/stateful-desktop.png').write_bytes(base64.b64decode(screenshot['data']))
+            Path('/tmp/' + ('stateful-legacy' if LEGACY else 'stateful') + '-desktop.png').write_bytes(base64.b64decode(screenshot['data']))
             call('Emulation.setDeviceMetricsOverride',{'width':390,'height':844,'deviceScaleFactor':1,'mobile':True})
             evaluate("new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))")
             check("document.documentElement.scrollWidth <= innerWidth")
@@ -325,7 +339,14 @@ def main():
             call('Emulation.setDeviceMetricsOverride',{'width':390,'height':844,'deviceScaleFactor':1,'mobile':True})
             evaluate("new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))")
             screenshot=call('Page.captureScreenshot',{'format':'png','captureBeyondViewport':False})
-            Path('/tmp/stateful-mobile.png').write_bytes(base64.b64decode(screenshot['data']))
+            Path('/tmp/' + ('stateful-legacy' if LEGACY else 'stateful') + '-mobile.png').write_bytes(base64.b64decode(screenshot['data']))
+            if LEGACY:
+                check("[...document.scripts].some(x=>x.src.includes('/legacy/app.js')) && ![...document.scripts].some(x=>x.src.endsWith('/js/app.js'))")
+                evaluate("document.querySelector('#copy-response').click()")
+                wait("document.querySelector('#copy-dialog').open")
+                check("document.querySelector('#copy-text').value.length>0 && document.querySelector('.legacy-backdrop').hidden===false")
+                evaluate("document.querySelector('#copy-close').click()")
+                check("document.querySelector('.legacy-backdrop').hidden")
             # Session sign-in survives reload, but is not written to localStorage by default.
             auth_key='kennedn-api-auth-v1:https://api.kennedn.com'
             call('Page.reload',{'ignoreCache':True})
@@ -352,7 +373,7 @@ def main():
             evaluate("window.__apiMode='rejectAll'; window.__mark=window.__calls.length; document.querySelector('#reconnect').click()")
             wait("document.querySelector('#auth-dialog').open && document.querySelector('#auth-button').textContent==='Sign in'")
             check('localStorage.getItem(' + json.dumps(auth_key) + ')===null && sessionStorage.getItem(' + json.dumps(auth_key) + ')===null && window.__calls.length-window.__mark===1')
-            print('Browser checks passed: category-fit sizing, independent category sizes in search/favourites, animated on-state borders, muted palette/shadows, battery/status merge, global/category bulk refresh/concurrency/cancellation, early completion after confirmed state, stale-state retry, bounded follow-ups and replacement/cutoff, Snowdon shortcuts, device visuals and 320–430px mobile typography/touch controls and session/remembered sign-in, opt-out, clearing and 401 invalidation.')
+            print(('Legacy compatibility checks passed: ' if LEGACY else 'Browser checks passed: ') + ' category-fit sizing, independent category sizes in search/favourites, animated on-state borders, muted palette/shadows, battery/status merge, global/category bulk refresh/concurrency/cancellation, early completion after confirmed state, stale-state retry, bounded follow-ups and replacement/cutoff, Snowdon shortcuts, device visuals and 320–430px mobile typography/touch controls and session/remembered sign-in, opt-out, clearing and 401 invalidation.')
         finally:
             if ws: ws.close()
             if process:

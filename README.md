@@ -1,6 +1,6 @@
 # Kennedn’s device controls
 
-A static Hugo site with a Python preprocessing step. No Vite, Node, npm, frontend framework, backend application, or third-party JavaScript is required.
+A static Hugo site with a Python preprocessing step. Normal build and hosting need no Node, npm, frontend framework or backend application. Older Safari automatically loads checked-in ES5 application assets and locally bundled compatibility libraries; there are no runtime CDN dependencies.
 
 ## Run
 
@@ -88,6 +88,7 @@ An optional browser smoke test uses an existing modern Chrome/Chromium installat
 
 ```sh
 python3 tests/browser_smoke.py
+python3 tests/browser_smoke.py --legacy
 ```
 
 It serves the generated output locally and substitutes API responses. Checks cover uniform category sizes, independent category heights in mixed search/favourite results, and content fit, animated state borders, global/category bulk requests and concurrency/cancellation, battery/status merging, the actual backoff timing and ten-second cancellation deadline, superseded polling, one-click actions without write retries, Snowdon shortcuts, device visuals, authentication, and desktop/mobile layout. It does not send commands to the real API.
@@ -95,3 +96,31 @@ It serves the generated output locally and substitutes API responses. Checks cov
 ## Separate API-side investigation
 
 [Prompt for another AI agent](docs/cors-investigation-prompt.md): reproduce and correct the response-side CORS behavior in the API/proxy, preserving internal/external authentication. This frontend change does not alter the API or bypass browser CORS.
+
+## iOS 8 / Safari 8 compatibility
+
+Older browsers automatically receive the compatibility path. Use `?legacy=1` to force it in a newer browser for inspection. Both paths use the same application source, discovery map, authentication behavior and controls.
+
+- ES5 syntax throughout the legacy bootloader, application bundle and vendor scripts, checked with Acorn during regeneration.
+- Bundled standard-library support from [core-js 3.26.1](https://github.com/zloirock/core-js/tree/v3.26.1) and an abortable XMLHttpRequest transport from [whatwg-fetch 3.6.20](https://github.com/JakeChampion/fetch). Their MIT licenses are shipped in `static/js/vendor/`.
+- DOM, UTF-8 encoding, cancellation, validation and modal-dialog fallbacks. Dialogs support stacking, Escape/Tab handling, scroll locking and focus restoration.
+- Literal-colour CSS and prefixed Flexbox layouts replace CSS variables, Grid and flex gap. Category sizing, readable mobile controls and the tile’s panel colour are retained. An SVG border animation replaces the conic-gradient border on older browsers, using the animation speed and border width from the main CSS when generated.
+- Copy opens a selectable-text panel when programmatic clipboard access is unavailable; touch and hold to use the browser’s Copy menu.
+
+The XHR transport cannot reliably implement fetch’s `redirect: 'error'` policy. Serve API routes directly without redirects; the API-origin restriction remains in the request builder. CORS behavior remains controlled by the browser/API. Private-browsing storage failures are handled without preventing sign-in; the panel reports when credentials cannot survive reload.
+
+### Maintaining the compatibility assets
+
+Generated files are committed. `hugo`, `make build`, `make serve` and `make test` work without Node/npm when those files match their sources. Builds verify source/output hashes and fail clearly if regeneration is needed.
+
+Only when modifying JavaScript, CSS or compatibility source files, regenerate with the optional tools:
+
+```sh
+npm install --prefix scripts/legacy
+node scripts/legacy/build.cjs
+hugo --minify
+```
+
+This is an asset maintenance step, not a frontend runtime or a replacement for Hugo. The build also accepts the corresponding system-installed Babel/PostCSS/Acorn packages.
+
+The legacy browser test removes modern APIs and exercises the ES5/XHR/layout/dialog path with simulated API responses, including status polling and cancellation. It validates behavior under compatibility fallbacks; **it is not a real iOS 8 device or WebKit 600 test**. Final on-device verification is still needed before claiming full platform certification. [Apple’s archived Safari CSS reference](https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariCSSRef/Articles/StandardCSSProperties.html) documents the older rendering baseline.

@@ -1,0 +1,7 @@
+{
+  "name": "kennedn-legacy-maintenance",
+  "private": true,
+  "description": "Optional tools for regenerating checked-in Safari 8 compatibility assets; not needed for Hugo builds",
+  "scripts": {"build": "node build.cjs"},
+  "dependencies": {"@babel/core": "7.20.12", "@babel/preset-env": "7.20.2", "postcss": "8.4.31", "acorn": "8.8.1"}
+}
