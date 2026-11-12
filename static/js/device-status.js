@@ -9,36 +9,29 @@ window.DeviceStatus = (() => {
   };
   function parse(service, node, payload, code = 'status') {
     let data = payload && typeof payload === 'object' && 'data' in payload ? payload.data : payload;
+    if (Array.isArray(data)) data = data[0];
     const state = {partial: null, power: null, online: null, heating: null, color: null, brightness: null, value: null, selection: null, metrics: [], flags: [], known: false};
     if (payload?.message && payload.message !== 'OK') return state;
     const add = (entry) => { if (entry) state.metrics.push(entry); };
     if (service === 'radiator' && code === 'battery') {
       state.partial = 'battery';
-      const readings = Array.isArray(data) ? data : [data];
-      for (const reading of readings) {
-        const value = number(reading?.value);
-        if (value === null || value < 0 || value > 100) continue;
-        const prefix = readings.length > 1 ? String(reading.id || 'Radiator') + ' · ' : '';
-        const entry = metric(prefix + 'Battery', value, '%', 0);
-        entry.key = 'battery:' + String(reading.id || 'device');
+      const value = number(data?.value);
+      if (value !== null && value >= 0 && value <= 100) {
+        const entry = metric('Battery', value, '%', 0);
+        entry.key = 'battery:' + String(data?.id || 'device');
         add(entry);
-        if (value <= 20) state.flags.push(prefix + 'Low battery');
+        if (value <= 20) state.flags.push('Low battery');
       }
     } else if (['thermostat', 'radiator'].includes(service)) {
-      const readings = Array.isArray(data) ? data : [data];
-      readings.forEach((reading, index) => {
-        if (!reading || typeof reading !== 'object') return;
-        if (index === 0) {
-          state.power = power(reading.onoff);
-          state.online = power(reading.online);
-          state.heating = typeof reading.temperature?.heating === 'boolean' ? reading.temperature.heating : null;
-        }
-        const prefix = readings.length > 1 ? String(reading.id || index + 1) + ' · ' : '';
+      if (data && typeof data === 'object') {
+        state.power = power(data.onoff);
+        state.online = power(data.online);
+        state.heating = typeof data.temperature?.heating === 'boolean' ? data.temperature.heating : null;
         // Heating services return temperatures in tenths of a degree Celsius.
-        if (number(reading.temperature?.current) !== null) add(metric(prefix + 'Room', Number(reading.temperature.current) / 10, '°C'));
-        if (number(reading.temperature?.target) !== null) add(metric(prefix + 'Target', Number(reading.temperature.target) / 10, '°C'));
-        if (reading.temperature?.openWindow === true) state.flags.push(prefix + 'Window open');
-      });
+        if (number(data.temperature?.current) !== null) add(metric('Room', Number(data.temperature.current) / 10, '°C'));
+        if (number(data.temperature?.target) !== null) add(metric('Target', Number(data.temperature.target) / 10, '°C'));
+        if (data.temperature?.openWindow === true) state.flags.push('Window open');
+      }
     } else if (data && typeof data === 'object' && !Array.isArray(data)) {
       state.power = power(data.onoff);
       if ('online' in data) state.online = power(data.online);
