@@ -688,7 +688,9 @@
     const minimum = window.KennednLegacy ? window.KennednLegacyConfig.tileMinHeight : parseFloat(getComputedStyle(board).getPropertyValue('--tile-min-height')) || 240;
     board.dataset.sizing = 'category';
     for (const {group, height} of sizes) {
-      const fitted = Math.max(minimum, height);
+      const maxHeight = parseFloat(getComputedStyle(group).getPropertyValue('--tile-max-height'));
+      const capped = Number.isFinite(maxHeight) ? Math.min(height, maxHeight) : height;
+      const fitted = Math.max(minimum, capped);
       if (!window.KennednLegacy) group.style.setProperty('--tile-height', fitted + 'px');
       if (window.KennednLegacyUI) for (const card of group.children) window.KennednLegacyUI.updateTile(card, fitted);
     }
