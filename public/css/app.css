@@ -116,8 +116,9 @@ body{background:#1c817e;color:#fff;font-size:16px}h1,h2,h3{color:#fff}a{color:#f
 @media(max-width:760px){
   .device-tiles{--tile-max-height:320px}
   .device-tiles[data-service=thermostat],.device-tiles[data-service=radiator]{--status-space:128px}
+  .device-tiles[data-service=radiator]{--tile-max-height:430px}
   .device-tiles[data-service=bthome]{--status-space:148px}
-  .device-tiles[data-service=bthome]{--tile-max-height:240px}
+  .device-tiles[data-service=bthome]{--tile-max-height:350px}
 }
 
 /* Larger, clearly separated mobile controls without changing the desktop layout. */
