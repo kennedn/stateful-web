@@ -69,7 +69,7 @@ body{background:#1c817e;color:#fff;font-size:16px}h1,h2,h3{color:#fff}a{color:#f
 @property --border-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
 @keyframes live-border{to{--border-angle:360deg}}
 .device-tiles{grid-auto-rows:auto;grid-auto-flow:row;align-items:stretch}
-.device-tile{height:300px;min-height:300px;align-self:stretch}
+.device-tile{height:260px;min-height:260px;align-self:stretch}
 .device-identity{flex-shrink:0}
 .device-tile .device-state{flex:1;min-height:0;overflow-y:auto;scrollbar-width:thin}
 .device-tile .quick-controls{flex-shrink:0;margin-top:auto}
@@ -102,18 +102,18 @@ body{background:#1c817e;color:#fff;font-size:16px}h1,h2,h3{color:#fff}a{color:#f
 .device-tile .quick-controls{margin-top:0}
 
 /* Each category fits its content in every view, with a common minimum height. */
-#device-grid{--tile-min-height:240px}
+#device-grid{--tile-min-height:220px}
 .device-tiles{--status-space:28px}
-.device-tiles[data-service=thermostat],.device-tiles[data-service=radiator]{--status-space:100px}
+.device-tiles[data-service=thermostat],.device-tiles[data-service=radiator]{--status-space:72px}
 .device-tiles[data-service=bthome]{--status-space:108px}
 .device-tiles[data-service=tvcom]{--status-space:48px}
 .device-tiles[data-service=snowdon]{--status-space:52px}
-.device-tile{height:var(--tile-height,280px);min-height:var(--tile-height,280px)}
+.device-tile{height:var(--tile-height,260px);min-height:var(--tile-height,260px)}
 .device-tile .device-state:empty{display:block}
 .measuring-tiles .device-tile{height:auto;min-height:0;align-self:start}
 .measuring-tiles .device-tile .device-state{display:block;flex:none;height:var(--status-space);min-height:var(--status-space);max-height:var(--status-space);overflow:hidden}
 .measuring-tiles .device-tile .device-feedback{margin-top:0}
-@media(max-width:760px){.device-tiles[data-service=thermostat],.device-tiles[data-service=radiator]{--status-space:128px}.device-tiles[data-service=bthome]{--status-space:148px}}
+@media(max-width:760px){.device-tiles[data-service=thermostat],.device-tiles[data-service=radiator]{--status-space:96px}.device-tiles[data-service=bthome]{--status-space:148px}}
 
 /* Larger, clearly separated mobile controls without changing the desktop layout. */
 @media(max-width:760px){
