@@ -93,7 +93,7 @@ body{background:#1c817e;color:#fff;font-size:16px}h1,h2,h3{color:#fff}a{color:#f
 .device-group-heading{align-items:center}
 
 /* Keep message slots in the layout, including while they are empty. */
-.device-feedback,.device-tile .device-feedback{height:2.4em;min-height:2.4em;max-height:2.4em;flex-shrink:0}
+.device-feedback,.device-tile .device-feedback{height:2.9em;min-height:2.9em;max-height:2.9em;flex-shrink:0}
 .device-feedback:empty{display:-webkit-box}
 .device-feedback .polling-state{margin:0;line-height:inherit}
 
@@ -102,33 +102,22 @@ body{background:#1c817e;color:#fff;font-size:16px}h1,h2,h3{color:#fff}a{color:#f
 .device-tile .quick-controls{margin-top:0}
 
 /* Each category fits its content in every view, with a common minimum height. */
-#device-grid{--tile-min-height:190px}
-.device-tiles{--status-space:24px}
-.device-tiles[data-service=meross]{--status-space:28px}
-.device-tiles[data-service=thermostat],.device-tiles[data-service=radiator]{--status-space:64px}
-.device-tiles[data-service=snowdon]{--status-space:32px}
-.device-tiles[data-service=tvcom]{--status-space:36px}
-.device-tiles[data-service=wol]{--status-space:24px}
-.device-tiles[data-service=hikvision]{--status-space:24px}
-.device-tiles[data-service=bthome]{--status-space:56px}
-.device-tiles[data-service=bins],.device-tiles[data-service=alert]{--status-space:24px}
-.device-tile{height:var(--tile-height,240px);min-height:var(--tile-height,240px)}
+#device-grid{--tile-min-height:240px}
+.device-tiles{--status-space:28px}
+.device-tiles[data-service=thermostat],.device-tiles[data-service=radiator]{--status-space:100px}
+.device-tiles[data-service=bthome]{--status-space:108px}
+.device-tiles[data-service=tvcom]{--status-space:48px}
+.device-tiles[data-service=snowdon]{--status-space:52px}
+.device-tile{height:var(--tile-height,280px);min-height:var(--tile-height,280px)}
 .device-tile .device-state:empty{display:block}
 .measuring-tiles .device-tile{height:auto;min-height:0;align-self:start}
 .measuring-tiles .device-tile .device-state{display:block;flex:none;height:var(--status-space);min-height:var(--status-space);max-height:var(--status-space);overflow:hidden}
 .measuring-tiles .device-tile .device-feedback{margin-top:0}
 @media(max-width:760px){
-  .device-tiles{--status-space:30px}
   .device-tiles{--tile-max-height:320px}
-  .device-tiles[data-service=meross]{--status-space:34px}
-  .device-tiles[data-service=thermostat],.device-tiles[data-service=radiator]{--status-space:84px}
-  .device-tiles[data-service=snowdon]{--status-space:42px}
-  .device-tiles[data-service=tvcom]{--status-space:48px}
-  .device-tiles[data-service=wol]{--status-space:32px}
-  .device-tiles[data-service=hikvision]{--status-space:32px}
-  .device-tiles[data-service=bthome]{--status-space:74px}
+  .device-tiles[data-service=thermostat],.device-tiles[data-service=radiator]{--status-space:128px}
+  .device-tiles[data-service=bthome]{--status-space:148px}
   .device-tiles[data-service=bthome]{--tile-max-height:240px}
-  .device-tiles[data-service=bins],.device-tiles[data-service=alert]{--status-space:30px}
 }
 
 /* Larger, clearly separated mobile controls without changing the desktop layout. */
